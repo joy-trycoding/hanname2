@@ -193,7 +193,7 @@
   };
 
  // ====== App init ======
-(async function init(){
+(async function init(){}
 
 // === Loading overlay：先顯示動畫 ===
 const overlay = document.getElementById('loadingOverlay');
@@ -408,8 +408,6 @@ const quoteEn  = classic.quoteEn  || chosen.quoteEn  || '';
 const quoteZh  = classic.quoteZh  || chosen.quoteZh  || '';
 
 // === 7) 五行/星座模板（10組），用種子選版本（可重現或隨機） ===
-
-// Five-Element EN
 const FE_TEMPLATES_EN = [
   "Born in month {month}, your nature aligns with {el} ({elZh}), symbolizing renewal and vitality. The second character “{secondChar}” strengthens inner balance and brings harmony to your temperament.",
   "The energy of {el} ({elZh}) dominates your birth month, granting creativity and growth. By using “{secondChar}”, your name softens excess vigor and guides it toward stability.",
@@ -422,8 +420,6 @@ const FE_TEMPLATES_EN = [
   "The presence of {el} grants resilience and compassion. “{secondChar}” weaves stability into your bright personality, balancing heart and reason.",
   "{elZh} rules your birth season, gifting openness and adaptability. “{secondChar}” completes this harmony, allowing you to stay calm amid growth."
 ];
-
-// Zodiac EN
 const ZO_TEMPLATES_EN = [
   "As a {zodiacEn} ({zodiacZh}), you’re bold and passionate — the first character “{firstChar}” channels that fire into refinement and grace.",
   "{zodiacEn} souls seek adventure; “{firstChar}” mirrors that spirit yet adds poise, helping you express courage with wisdom.",
@@ -436,8 +432,6 @@ const ZO_TEMPLATES_EN = [
   "A {zodiacEn} thrives on challenge; “{firstChar}” refines your impulsive side, turning courage into charisma.",
   "{zodiacEn} energy radiates confidence — “{firstChar}” echoes that light, bringing you both elegance and magnetism."
 ];
-
-// 五行 Zh
 const FE_TEMPLATES_ZH = [
   "生於{month}月，命格偏{elZh}，象徵生長與希望。名字第二字「{secondChar}」調和五行，使氣質更為均衡穩定。",
   "{elZh}之氣主導你的出生月，帶來創造與靈性。「{secondChar}」一字平衡旺盛的生命力，使你兼具柔韌與堅定。",
@@ -450,11 +444,9 @@ const FE_TEMPLATES_ZH = [
   "命帶{elZh}，氣質堅毅溫厚，「{secondChar}」潤化剛強，使理性與感性相得益彰。",
   "{elZh}之性，使你開朗而善應變。「{secondChar}」補足五行，讓進取與寧靜並存。"
 ];
-
-// 星象 Zh
 const ZO_TEMPLATES_ZH = [
   "屬於{zodiacZh}的你天性熱情果敢，第一字「{firstChar}」將這份火焰化為優雅與自信。",
-  "{zodiacZh}象徵冒險與領先，「「{firstChar}」讓這份衝勁更顯沉著，展現勇氣與智慧並存。",
+  "{zodiacZh}象徵冒險與領先，「{firstChar}」讓這份衝勁更顯沉著，展現勇氣與智慧並存。",
   "典型的{zodiacZh}熱情率真，「{firstChar}」字化動為靜，讓自信更具魅力與感染力。",
   "{zodiacZh}象徵勇氣與光明，「{firstChar}」延展此特質，使你以創意與力量影響他人。",
   "{zodiacZh}的靈魂熱烈而自由，「{firstChar}」導引這股能量化為真誠的表達與領導氣場。",
@@ -464,39 +456,55 @@ const ZO_TEMPLATES_ZH = [
   "{zodiacZh}面對挑戰不懼，「{firstChar}」收斂衝動，轉化為魅力與領導力。",
   "{zodiacZh}能量熱烈自信，「{firstChar}」映照此光，成就優雅與堅毅兼具的特質。"
 ];
-
-// 小工具：字串模板套值
 function formatTpl(tpl, obj){
   return tpl.replace(/\{(\w+)\}/g, (_,k)=> obj[k] ?? '');
 }
-
-// 讓變化可「重現」：用 name+birth+cnFull 當種子，固定落在 0~9
-const templateIndex = Math.abs(hash(enName + (birth||'') + (cnFull||''))) % 10;
-
-// 建立模板上下文
+function templateIndexBySeed(n){
+  const seedStr = makeSeedString() + '|TEMPLATE';
+  if ((qs.get('var')||'').toLowerCase()==='random') return Math.floor(Math.random()*n);
+  return Math.abs(hash2(seedStr)) % n;
+}
 const ctx = {
-  month: m,                 // 你的程式中「月份」變數（數字）
-  el,                       // 五行英文（Wood/Fire/...）
-  elZh,                     // 五行中文（木/火/...）
+  month: m,
+  el, elZh,
   firstChar: cnGiven.charAt(0),
   secondChar: cnGiven.charAt(1) || cnGiven.charAt(0),
-  zodiacEn: z,              // 星座英文（Aries...）
-  zodiacZh: zInfo.cn,       // 星座中文（牡羊...）
-  traitEn: zInfo.traitEn,   // 星座特質英文（可用在你要擴充的模板）
-  traitZh: zInfo.traitZh    // 星座特質中文
+  zodiacEn: z,
+  zodiacZh: zInfo.cn,
+  traitEn: zInfo.traitEn,
+  traitZh: zInfo.traitZh
 };
+const tplIdx = templateIndexBySeed(10);
 
-// 寫回 DOM
-$('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> ${formatTpl(FE_TEMPLATES_EN[templateIndex], ctx)}`;
-$('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong>${formatTpl(FE_TEMPLATES_ZH[templateIndex], ctx)}</span>`;
-$('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${formatTpl(ZO_TEMPLATES_EN[templateIndex], ctx)}`;
-$('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${formatTpl(ZO_TEMPLATES_ZH[templateIndex], ctx)}</span>`;
+// === 8) 寫回 UI ===
+const $ = (id)=>document.getElementById(id);
+$('enName').textContent   = `English Name: ${enName}`;
+$('cnFullName').textContent = cnFull;
+$('pinyinFull').textContent = pyFull;
 
- // === 9) 完成 → 淡出 overlay ===
- try { clearInterval(floatTimer); } catch(e){}
-  if (overlay) {
-    overlay.classList.add('hide');
-    setTimeout(()=> overlay.remove(), 900); }
+$('tagline').innerHTML =
+  `Your exclusive Chinese name is <span class="em zh">${cnFull}</span>. Meaning: <span class="em">${chosen.meaningEn||''}</span>｜你的中文名字是「<span class="em zh">${cnFull}</span>」，意涵：<span class="em zh">${chosen.meaningZh||''}</span>`;
+
+const sNoteEn = s.noteEn || ''; const sEra = s.era || ''; const sFEn = s.famousEn || '';
+$('surnameLine').textContent = `${cnSurname} (${pySurname}) — ${sNoteEn}`;
+$('surnameOrigin').innerHTML = `<strong>Origin:</strong> ${sEra} dynasty; famous figure: ${sFEn}`;
+
+$('givenLine').textContent = `${cnGiven} (${pyGiven}) — ${chosen.meaningEn||''}`;
+$('classicEn').innerHTML =
+  `<strong>Classic Source:</strong> The character “${primaryChar}” in <em>${sourceEn}</em> — “${quoteEn}”.`;
+$('classicZh').innerHTML =
+  `<span class="zh"><strong>典籍出處：</strong>${sourceZh}——「${quoteZh}」。</span>`;
+
+$('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> ${formatTpl(FE_TEMPLATES_EN[tplIdx], ctx)}`;
+$('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong>${formatTpl(FE_TEMPLATES_ZH[tplIdx], ctx)}</span>`;
+$('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${formatTpl(ZO_TEMPLATES_EN[tplIdx], ctx)}`;
+$('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${formatTpl(ZO_TEMPLATES_ZH[tplIdx], ctx)}</span>`;
+
+// === 9) 完成 → 淡出 overlay ===
+try { clearInterval(floatTimer); } catch(e){}
+if (overlay) {
+  overlay.classList.add('hide');
+  setTimeout(()=> overlay.remove(), 900);
     // TTS
     function speak(text){
       const u = new SpeechSynthesisUtterance(text);
@@ -531,5 +539,4 @@ $('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${formatTp
   })();
   </script>
 </body>
-</html>
-
+</html> 

@@ -311,10 +311,6 @@
   const el = MONTH_TO_ELEMENT[m] || 'Wood';
   const elZh = ELEMENT_ZH[el] || '木';
 
-  function zodiac(mm,dd){
-    const z=[['Capricorn',1,19],['Aquarius',2,18],['Pisces',3,20],['Aries',4,19],['Taurus',5,20],['Gemini',6,20],['Cancer',7,22],['Leo',8,22],['Virgo',9,22],['Libra',10,22],['Scorpio',11,21],['Sagittarius',12,21],['Capricorn',12,31]];
-    for(const [name,MM,DD] of z){ if(mm<MM || (mm===MM && dd<=DD)) return name; }
-  }
   const z = zodiac(m,d) || 'Pisces';
   const zInfo = ZODIAC_CN_MAP[z] || ZODIAC_CN_MAP['Pisces'];
 
@@ -328,6 +324,7 @@
     return h | 0;
   }
   function makeSeedString(){
+    // [修改一] 將 d (日期) 加入種子，確保每日結果都不同
     return [
       (enName || '').toLowerCase(),
       (birth  || '').toLowerCase(),
@@ -336,6 +333,7 @@
       (cnSurname || ''),
       (el || ''),
       (z || ''),
+      d, // <--- 增加日期的影響力
       salt
     ].join('|');
   }
@@ -406,53 +404,54 @@
   const quoteZh  = classic.quoteZh  || chosen.quoteZh  || '';
 
   // === 7) 五行/星座模板（10組），用種子選版本（可重現或隨機） ===
+  // [修改二] 對調 firstChar 和 secondChar，讓五行解釋第一字，星座解釋第二字
   const FE_TEMPLATES_EN = [
-    "Born in month {month}, your nature aligns with {el} ({elZh}), symbolizing renewal and vitality. The second character “{secondChar}” strengthens inner balance and brings harmony to your temperament.",
-    "The energy of {el} ({elZh}) dominates your birth month, granting creativity and growth. By using “{secondChar}”, your name softens excess vigor and guides it toward stability.",
-    "April’s {el} element flows through you, evoking vitality and empathy. The character “{secondChar}” nurtures this flow, creating calm strength and steady purpose.",
-    "The essence of {elZh} in your chart emphasizes compassion and growth. “{secondChar}” anchors these qualities, bringing balance between idealism and action.",
-    "Your elemental path of {el} lends flexibility and intuition. The name’s latter part “{secondChar}” acts as a steadying root, harmonizing your emotions.",
-    "With {elZh} predominant, you possess natural empathy and an artistic touch. “{secondChar}” enhances resilience, letting you grow through challenges.",
-    "Born under strong {el} energy, you thrive in connection and learning. “{secondChar}” stabilizes your curiosity, grounding inspiration into real action.",
-    "Month {month} aligns with {elZh}, symbol of harmony and renewal. The second glyph “{secondChar}” enriches emotional balance and steady growth.",
-    "The presence of {el} grants resilience and compassion. “{secondChar}” weaves stability into your bright personality, balancing heart and reason.",
-    "{elZh} rules your birth season, gifting openness and adaptability. “{secondChar}” completes this harmony, allowing you to stay calm amid growth."
+    "Born in month {month}, your nature aligns with {el} ({elZh}), symbolizing renewal and vitality. The first character “{firstChar}” strengthens inner balance and brings harmony to your temperament.",
+    "The energy of {el} ({elZh}) dominates your birth month, granting creativity and growth. By using “{firstChar}”, your name softens excess vigor and guides it toward stability.",
+    "April’s {el} element flows through you, evoking vitality and empathy. The character “{firstChar}” nurtures this flow, creating calm strength and steady purpose.",
+    "The essence of {elZh} in your chart emphasizes compassion and growth. “{firstChar}” anchors these qualities, bringing balance between idealism and action.",
+    "Your elemental path of {el} lends flexibility and intuition. The name’s first part “{firstChar}” acts as a steadying root, harmonizing your emotions.",
+    "With {elZh} predominant, you possess natural empathy and an artistic touch. “{firstChar}” enhances resilience, letting you grow through challenges.",
+    "Born under strong {el} energy, you thrive in connection and learning. “{firstChar}” stabilizes your curiosity, grounding inspiration into real action.",
+    "Month {month} aligns with {elZh}, symbol of harmony and renewal. The first glyph “{firstChar}” enriches emotional balance and steady growth.",
+    "The presence of {el} grants resilience and compassion. “{firstChar}” weaves stability into your bright personality, balancing heart and reason.",
+    "{elZh} rules your birth season, gifting openness and adaptability. “{firstChar}” completes this harmony, allowing you to stay calm amid growth."
   ];
   const ZO_TEMPLATES_EN = [
-    "As a {zodiacEn} ({zodiacZh}), you’re bold and passionate — the first character “{firstChar}” channels that fire into refinement and grace.",
-    "{zodiacEn} souls seek adventure; “{firstChar}” mirrors that spirit yet adds poise, helping you express courage with wisdom.",
-    "A true {zodiacEn} is radiant and driven — “{firstChar}” transforms impulse into confident charm, revealing natural leadership.",
-    "Under the sign of {zodiacEn}, the word “{firstChar}” refines your fiery drive into creativity and influence.",
-    "{zodiacEn} hearts blaze with independence — “{firstChar}” channels this flame toward grace and authentic self-expression.",
-    "As a {zodiacEn}, “{firstChar}” celebrates your fearless heart and helps project confidence that inspires others.",
-    "The {zodiacEn} constellation symbolizes courage and renewal — “{firstChar}” magnifies your pioneering light.",
-    "For a spirited {zodiacEn}, “{firstChar}” acts as a talisman of clarity, helping channel passion into purpose.",
-    "A {zodiacEn} thrives on challenge; “{firstChar}” refines your impulsive side, turning courage into charisma.",
-    "{zodiacEn} energy radiates confidence — “{firstChar}” echoes that light, bringing you both elegance and magnetism."
+    "As a {zodiacEn} ({zodiacZh}), you’re bold and passionate — the second character “{secondChar}” channels that fire into refinement and grace.",
+    "{zodiacEn} souls seek adventure; “{secondChar}” mirrors that spirit yet adds poise, helping you express courage with wisdom.",
+    "A true {zodiacEn} is radiant and driven — “{secondChar}” transforms impulse into confident charm, revealing natural leadership.",
+    "Under the sign of {zodiacEn}, the word “{secondChar}” refines your fiery drive into creativity and influence.",
+    "{zodiacEn} hearts blaze with independence — “{secondChar}” channels this flame toward grace and authentic self-expression.",
+    "As a {zodiacEn}, “{secondChar}” celebrates your fearless heart and helps project confidence that inspires others.",
+    "The {zodiacEn} constellation symbolizes courage and renewal — “{secondChar}” magnifies your pioneering light.",
+    "For a spirited {zodiacEn}, “{secondChar}” acts as a talisman of clarity, helping channel passion into purpose.",
+    "A {zodiacEn} thrives on challenge; “{secondChar}” refines your impulsive side, turning courage into charisma.",
+    "{zodiacEn} energy radiates confidence — “{secondChar}” echoes that light, bringing you both elegance and magnetism."
   ];
   const FE_TEMPLATES_ZH = [
-    "生於{month}月，命格偏{elZh}，象徵生長與希望。名字第二字「{secondChar}」調和五行，使氣質更為均衡穩定。",
-    "{elZh}之氣主導你的出生月，帶來創造與靈性。「{secondChar}」一字平衡旺盛的生命力，使你兼具柔韌與堅定。",
-    "{month}月的{elZh}之性，賦予你成長與同理心。「{secondChar}」溫潤其間，使能量流動而不躁，內外和諧。",
-    "五行屬{elZh}者，多具包容與進取心。「{secondChar}」使其氣象中庸，讓理想與行動達到平衡。",
-    "命格中{elZh}旺盛，靈氣流動，「{secondChar}」如根般穩定，讓情感與理智共生。",
-    "{elZh}主仁與藝，「{secondChar}」增其堅韌，使你在挑戰中依舊成長綻放。",
-    "五行偏{elZh}，你天生善感且富學習力，「{secondChar}」穩定情緒，使靈感化為實踐。",
-    "生於{month}月，承{elZh}之氣，性情平和而具包容。「{secondChar}」令思緒更清明，成就長遠之志。",
-    "命帶{elZh}，氣質堅毅溫厚，「{secondChar}」潤化剛強，使理性與感性相得益彰。",
-    "{elZh}之性，使你開朗而善應變。「{secondChar}」補足五行，讓進取與寧靜並存。"
+    "生於{month}月，命格偏{elZh}，象徵生長與希望。名字第一字「{firstChar}」調和五行，使氣質更為均衡穩定。",
+    "{elZh}之氣主導你的出生月，帶來創造與靈性。「{firstChar}」一字平衡旺盛的生命力，使你兼具柔韌與堅定。",
+    "{month}月的{elZh}之性，賦予你成長與同理心。「{firstChar}」溫潤其間，使能量流動而不躁，內外和諧。",
+    "五行屬{elZh}者，多具包容與進取心。「{firstChar}」使其氣象中庸，讓理想與行動達到平衡。",
+    "命格中{elZh}旺盛，靈氣流動，「{firstChar}」如根般穩定，讓情感與理智共生。",
+    "{elZh}主仁與藝，「{firstChar}」增其堅韌，使你在挑戰中依舊成長綻放。",
+    "五行偏{elZh}，你天生善感且富學習力，「{firstChar}」穩定情緒，使靈感化為實踐。",
+    "生於{month}月，承{elZh}之氣，性情平和而具包容。「{firstChar}」令思緒更清明，成就長遠之志。",
+    "命帶{elZh}，氣質堅毅溫厚，「{firstChar}」潤化剛強，使理性與感性相得益彰。",
+    "{elZh}之性，使你開朗而善應變。「{firstChar}」補足五行，讓進取與寧靜並存。"
   ];
   const ZO_TEMPLATES_ZH = [
-    "屬於{zodiacZh}的你天性熱情果敢，第一字「{firstChar}」將這份火焰化為優雅與自信。",
-    "{zodiacZh}象徵冒險與領先，「{firstChar}」讓這份衝勁更顯沉著，展現勇氣與智慧並存。",
-    "典型的{zodiacZh}熱情率真，「{firstChar}」字化動為靜，讓自信更具魅力與感染力。",
-    "{zodiacZh}象徵勇氣與光明，「{firstChar}」延展此特質，使你以創意與力量影響他人。",
-    "{zodiacZh}的靈魂熱烈而自由，「{firstChar}」導引這股能量化為真誠的表達與領導氣場。",
-    "你的{zodiacZh}個性剛烈真誠，「{firstChar}」平衡其鋒芒，使魅力更顯從容。",
-    "{zodiacZh}象徵重生與勇氣，「{firstChar}」讓你的開創精神更具方向。",
-    "作為{zodiacZh}，你具領袖氣勢，「{firstChar}」呼應此光，使行動更有魅力與感染力。",
-    "{zodiacZh}面對挑戰不懼，「{firstChar}」收斂衝動，轉化為魅力與領導力。",
-    "{zodiacZh}能量熱烈自信，「{firstChar}」映照此光，成就優雅與堅毅兼具的特質。"
+    "屬於{zodiacZh}的你天性熱情果敢，第二字「{secondChar}」將這份火焰化為優雅與自信。",
+    "{zodiacZh}象徵冒險與領先，「{secondChar}」讓這份衝勁更顯沉著，展現勇氣與智慧並存。",
+    "典型的{zodiacZh}熱情率真，「{secondChar}」字化動為靜，讓自信更具魅力與感染力。",
+    "{zodiacZh}象徵勇氣與光明，「{secondChar}」延展此特質，使你以創意與力量影響他人。",
+    "{zodiacZh}的靈魂熱烈而自由，「{secondChar}」導引這股能量化為真誠的表達與領導氣場。",
+    "你的{zodiacZh}個性剛烈真誠，「{secondChar}」平衡其鋒芒，使魅力更顯從容。",
+    "{zodiacZh}象徵重生與勇氣，「{secondChar}」讓你的開創精神更具方向。",
+    "作為{zodiacZh}，你具領袖氣勢，「{secondChar}」呼應此光，使行動更有魅力與感染力。",
+    "{zodiacZh}面對挑戰不懼，「{secondChar}」收斂衝動，轉化為魅力與領導力。",
+    "{zodiacZh}能量熱烈自信，「{secondChar}」映照此光，成就優雅與堅毅兼具的特質。"
   ];
   function formatTpl(tpl, obj){
     return tpl.replace(/\{(\w+)\}/g, (_,k)=> obj[k] ?? '');

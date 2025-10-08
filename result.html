@@ -26,6 +26,59 @@
     console.log('載入成功：', CLASSIC_BOOK.length, SURNAME_CATALOG.length);
   })();
 </script>
+<script type="module">
+  async function loadJSON(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status} while loading ${url}`);
+    return res.json();
+  }
+  
+  // ✅ 這就是缺少的搜尋函式 findClassic()
+  function findClassic(keyword, classicsData) {
+    if (!keyword || !Array.isArray(classicsData)) return [];
+  
+    const key = keyword.trim().toLowerCase();
+    return classicsData.filter(item => {
+      // 根據你的資料結構調整，例如：item.text, item.title, item.source
+      return (
+        (item.title && item.title.toLowerCase().includes(key)) ||
+        (item.text && item.text.toLowerCase().includes(key)) ||
+        (item.source && item.source.toLowerCase().includes(key))
+      );
+    });
+  }
+  
+  (async function init() {
+    const base = location.pathname.split('/').slice(0, -1).join('/') || '';
+  
+    // 讀姓氏
+    let surnames = [];
+    try {
+      surnames = await loadJSON(base + '/data/surnames.json');
+      console.log('[HanName] surnames loaded:', surnames.length);
+    } catch (err) {
+      console.error('[HanName] Failed to load surnames.json', err);
+      surnames = [];
+    }
+  
+    // 讀典籍
+    let classics = [];
+    try {
+      classics = await loadJSON(base + '/data/classics.json');
+      console.log('[HanName] classics loaded:', classics.length);
+    } catch (err) {
+      console.error('[HanName] Failed to load classics.json', err);
+      classics = [];
+    }
+  
+    // ✅ 測試搜尋：找包含「仁」的條目
+    const results = findClassic('仁', classics);
+    console.log('Classic results:', results);
+  
+    // 你的原本結果頁初始化程式可放這裡
+  })();
+  </script>
+  
   <style>
     :root{ --paper:#F5F1E8; --ink:#1C1B1A; --accent:#C49A6C; --muted:#666; --line:#E5DFD3; }
     *{box-sizing:border-box}

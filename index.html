@@ -49,7 +49,7 @@
     .brand-sub{font-size:12px; color:var(--muted)}
 
     .cta-row{display:flex; gap:12px; align-items:center}
-    .btn{appearance:none; border:1px solid #0000; padding:12px 16px; border-radius:999px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:opacity .2s ease, transform .2s ease}
+    .btn{appearance:none; border:1px solid #0000; padding:12px 16px; border-radius:999px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:opacity .2s ease, transform .2s ease, background-color .2s ease, border-color .2s ease;}
     .btn-primary{background:var(--btn); color:var(--btn-text)}
     .btn-primary:hover{opacity:.92; transform:translateY(-1px)}
     .btn-ghost{background:transparent; border-color:var(--ink); color:var(--ink)}
@@ -67,15 +67,56 @@
     .hero p.lede{font-size:clamp(15px,2.1vw,18px); color:#2a2a2a; margin:10px 0 18px}
     .hero-card{background:#fff; border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:0 6px 30px rgba(0,0,0,.06)}
 
-    /* Sample form strip */
-    .strip{display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 10px}
-    input[type="text"], input[type="date"]{
-      flex:1 1 220px; border:1px solid var(--line); background:#fff; padding:14px 16px; border-radius:12px; outline:none; font:inherit; min-height:48px
+    /* --- REDESIGNED: Form Input Group --- */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 24px;
     }
-    .helper{font-size:12px; color:var(--muted)}
+    .strip{display:flex; gap:10px; flex-wrap:wrap; }
+    input[type="text"], input[type="date"]{
+      flex:1 1 200px; border:1px solid var(--line); background:#fff; padding:14px 16px; border-radius:12px; outline:none; font:inherit; min-height:50px
+    }
+    #goBtn {
+        height: 50px;
+        width: 100%;
+        font-size: 16px;
+    }
+
+    /* Gender Selection */
+    #genderSelection{
+      display: none;
+      opacity: 0;
+      gap: 10px;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      transform: translateY(-10px);
+    }
+    #genderSelection.visible{
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .gender-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid var(--line);
+      background-color: #fff;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      height: 50px;
+    }
+    .gender-btn.active {
+      background-color: var(--ink);
+      color: var(--btn-text);
+      border-color: var(--ink);
+    }
+    .gender-label { font-size: 13px; font-weight: 500; color: #333; margin-bottom: 6px; padding-left: 4px; }
+
 
     /* Feature trio */
-    .features{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:26px 0}
+    .features{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:32px 0}
     .feature{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px}
     .feature h3{font-family:'Noto Serif TC','Playfair Display',serif; margin:6px 0 6px; font-size:18px}
     .feature .icon{font-size:20px}
@@ -95,6 +136,42 @@
     /* Pricing cards */
     .pricing{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
 
+    /* NEW: Gift Modal Styles */
+    #giftModal {
+      position: fixed; inset: 0;
+      background: rgba(28, 27, 26, 0.7);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #giftModal.visible { display: flex; opacity: 1; }
+    .modal-content {
+      background: var(--paper);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+    #giftModal.visible .modal-content { transform: scale(1); }
+    .modal-close-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--paper-2); border: 1px solid var(--line);
+      border-radius: 50%; width: 32px; height: 32px;
+      font-size: 18px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 16px; }
+    .modal-title { font-family:'Playfair Display','Noto Serif TC',serif; font-size: 22px; margin: 0 0 8px; }
+    .modal-desc { margin: 0 0 16px; font-size: 15px; color: #333; }
+    .modal-pricing { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+    .modal-price-special { font-size: 24px; font-weight: 700; color: var(--accent-2); }
+    .modal-price-original { font-size: 16px; text-decoration: line-through; color: var(--muted); }
+    
     /* Responsive */
     @media (max-width: 1024px){
       .container{padding:0 16px}
@@ -113,19 +190,11 @@
     @media (min-width: 901px){.sticky-cta{display:none}}
   </style>
   <base href="https://joy-trycoding.github.io/hanname2/">
-  <script>
-    // Minimal Google Analytics helper (optional).
-    // If you add GA4, include gtag.js in <head> and these events will be sent automatically.
-    // Example GA4 snippet to add above this script:
-    // <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
-    // <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-XXXXXXX');</script>
-  </script>
 </head>
 <body>
   <div class="rice" aria-hidden="true"></div>
   <header>
     <div class="container nav">
-      <!-- LOGO: replace src with your actual logo file at /assets/logo.svg  -->
       <a class="brand" href="#" aria-label="HanName home">
         <img src="assets/logo.svg" alt="HanName logo" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'HanName',style:'font-weight:700;font-family:Playfair Display, Noto Serif TC, serif;font-size:20px;'}))" />
         <div>
@@ -141,20 +210,33 @@
   </header>
 
   <main class="container">
-    <!-- HERO -->
     <section class="section hero" id="start">
       <div>
         <span class="hero-badge" aria-label="badge">✨ Culture · Sound · Meaning</span>
         <h1>Discover your <em>Chinese identity</em> — one name at a time.</h1>
         <p class="lede">HanName crafts a Chinese name that fits your story. We blend sound, meaning, and heritage — and can reflect your birthday or zodiac — into a beautiful identity you can own, share, and even seal in a traditional stamp.</p>
-        <div class="strip" role="form" aria-label="quick start">
-          <input type="text" id="enName" placeholder="Enter your name" aria-label="Your name" />
-          <input type="date" id="birth" aria-label="Birthday (optional)" />
-          <button class="btn btn-primary" id="goBtn" data-track="discover-name">
-            Get my Chinese name
-          </button>
+        
+        <div class="form-group" role="form" aria-label="quick start">
+            <div class="strip">
+                <input type="text" id="enName" placeholder="Enter your name" aria-label="Your name" />
+                <input type="date" id="birth" aria-label="Birthday (optional)" />
+            </div>
+            
+            <div id="genderSelection">
+                <div>
+                    <div class="gender-label">Gender (optional)</div>
+                    <div class="strip">
+                        <button class="gender-btn" data-gender="female">Female</button>
+                        <button class="gender-btn" data-gender="male">Male</button>
+                        <button class="gender-btn" data-gender="non-binary">Non-binary</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="goBtn" data-track="discover-name">
+                Get my Chinese name
+            </button>
         </div>
-        <div class="helper">No account needed • Free to try • Upgrade for certificate & seal gift box</div>
 
         <div class="features">
           <div class="feature">
@@ -175,7 +257,6 @@
         </div>
       </div>
 
-      <!-- Preview card (feel/atmosphere of cultural identity) -->
       <aside class="hero-card" aria-label="sample certificate preview">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
           <div style="font-family:'Noto Serif TC','Playfair Display',serif; font-size:22px;">示例 · Sample</div>
@@ -202,7 +283,6 @@
       </aside>
     </section>
 
-    <!-- HOW IT WORKS -->
     <section class="section" id="how" style="margin:34px 0 20px">
       <div class="sep"></div>
       <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">How it works</h2>
@@ -213,7 +293,6 @@
       </ol>
     </section>
 
-    <!-- CASE STUDIES / STORIES -->
     <section class="section" id="stories" aria-label="Case studies" style="margin:20px 0 20px">
       <div class="sep"></div>
       <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">Stories from our users</h2>
@@ -233,14 +312,12 @@
       </div>
     </section>
 
-    <!-- COUNTER BAND -->
     <section class="section band" aria-label="usage counter">
       <div class="container">
         <div class="counter">Used by <span id="counter" class="odometer">2,048</span> people — and counting</div>
       </div>
     </section>
 
-    <!-- PRICING / OFFER -->
     <section class="section" id="pricing" style="margin:20px 0 60px">
       <div class="sep"></div>
       <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">Own your identity</h2>
@@ -254,18 +331,17 @@
         <div class="feature">
           <h3>Seal Gift Box — Wood</h3>
           <p>Traditional wooden name seal with your Chinese name. Includes an origin card describing the meaning and sound.</p>
-          <a class="btn btn-ghost" href="#start">Preview →</a>
+          <button class="btn btn-ghost" data-gift="wood">Preview →</button>
         </div>
         <div class="feature">
           <h3>Seal Gift Box — Horn</h3>
           <p>Premium horn seal engraved with your name <em>and</em> a classical source of the name on the seal body (e.g., 《詩經》, 《楚辭》). A piece to cherish.</p>
-          <a class="btn btn-ghost" href="#start">Preview →</a>
+          <button class="btn btn-ghost" data-gift="horn">Preview →</button>
         </div>
       </div>
     </section>
     </main>
 
-  <!-- Sticky bottom CTA -->
   <div id="stickyCTA" class="sticky-cta" role="region" aria-label="sticky actions">
     <div class="container cta-wrap">
       <span class="cta-text">Start your Chinese identity journey</span>
@@ -284,162 +360,148 @@
     </div>
   </footer>
 
+  <div id="giftModal" aria-modal="true" role="dialog">
+    <div class="modal-content">
+        <button class="modal-close-btn" aria-label="Close dialog">&times;</button>
+        <img id="modalImg" src="" alt="Gift preview" class="modal-img">
+        <h3 id="modalTitle" class="modal-title"></h3>
+        <p id="modalDesc" class="modal-desc"></p>
+        <div class="modal-pricing">
+            <span id="modalPriceSpecial" class="modal-price-special"></span>
+            <span id="modalPriceOriginal" class="modal-price-original"></span>
+        </div>
+        <a id="modalBuyBtn" href="#" class="btn btn-primary" style="width: 100%;">立即購買</a>
+    </div>
+  </div>
+
   <script>
     // Fill year
     document.getElementById('y').textContent = new Date().getFullYear();
 
-    // Intersection + Scroll logic: only dim sections that are clearly above the viewport
+    // Intersection + Scroll logic
     const sections = Array.from(document.querySelectorAll('section.section'));
-
     const revealIO = new IntersectionObserver((entries)=>{
       entries.forEach(entry=>{
-        if(entry.isIntersecting){
-          entry.target.classList.add('is-visible');
-        }
+        if(entry.isIntersecting){ entry.target.classList.add('is-visible'); }
       });
     }, {threshold: 0.15});
     sections.forEach(s=>revealIO.observe(s));
-
-    const updateDim = () => {
-      const topThreshold = 70; // keep current section fully readable before dimming
-      sections.forEach(s=>{
-        const r = s.getBoundingClientRect();
-        if(r.bottom < topThreshold){
-          s.classList.add('is-dim'); // scrolled past
-        } else if(r.top > window.innerHeight){
-          s.classList.remove('is-dim'); // below viewport, stay vivid when arriving
-        } else {
-          s.classList.remove('is-dim'); // in view
-        }
-      });
-    };
-    window.addEventListener('scroll', updateDim, {passive:true});
-    window.addEventListener('resize', updateDim);
-    updateDim();
-
-    // Usage counter (client-side progressive counter)
+    
+    // Counter
     const COUNTER_KEY = 'hanname_visits_counter_v1';
-    const MIN_INC = 1, MAX_INC = 8, BASE = 2048;
-    const getRand = ()=> Math.floor(Math.random()*(MAX_INC-MIN_INC+1))+MIN_INC;
-    const stored = parseInt(localStorage.getItem(COUNTER_KEY)||'0',10);
-    const current = Math.max(stored || BASE, BASE) + getRand();
+    const BASE = 2048;
+    const current = (parseInt(localStorage.getItem(COUNTER_KEY)||'0',10) || BASE) + Math.floor(Math.random()*8)+1;
     localStorage.setItem(COUNTER_KEY, String(current));
     const $counter = document.getElementById('counter');
-    const animateCount = (el, to)=>{
-      const from = parseInt(el.textContent.replace(/[, ]/g,''),10) || BASE;
-      const dur = 600, steps = 24;
-      let frame = 0;
-      const tick = ()=>{
-        frame++;
-        const val = Math.round(from + (to-from)*(frame/steps));
-        el.textContent = val.toLocaleString();
-        if(frame < steps) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
-    setTimeout(()=>{
-      if($counter) animateCount($counter, current)
-    }, 220);
+    if ($counter) setTimeout(() => $counter.textContent = current.toLocaleString(), 220);
 
-    // Web Speech API TTS for Chinese pronunciation of the sample name
+    // TTS
     const ttsBtn = document.getElementById('ttsBtn');
-    const speakCN = (text)=>{
-      if(!('speechSynthesis' in window)) return alert('Speech not supported on this browser');
-      const utter = new SpeechSynthesisUtterance(text);
-      const voices = speechSynthesis.getVoices();
-      // Prefer zh-TW or zh-CN voice
-      const v = voices.find(v=>/zh|cmn|Chinese/i.test(v.lang)) || voices[0];
-      if(v) utter.voice = v;
-      utter.lang = v?.lang || 'zh-TW';
-      utter.rate = 0.95; utter.pitch = 1.02;
-      speechSynthesis.cancel();
-      speechSynthesis.speak(utter);
+    if (ttsBtn) ttsBtn.addEventListener('click', () => speakCN('雅寧'));
+    function speakCN(text) {
+        if (!('speechSynthesis' in window)) return;
+        const utter = new SpeechSynthesisUtterance(text);
+        const v = speechSynthesis.getVoices().find(v => /zh|cmn/i.test(v.lang));
+        if (v) utter.voice = v;
+        utter.lang = v?.lang || 'zh-TW';
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utter);
+    }
+    
+    // Gift Modal Logic
+    const giftData = {
+        wood: { imgSrc: 'assets/gifts/wood-seal.jpg', title: 'Seal Gift Box — Wood', description: 'Traditional wooden name seal with your Chinese name. Includes an origin card describing the meaning and sound.', priceSpecial: 'NT$1,280', priceOriginal: 'NT$1,500' },
+        horn: { imgSrc: 'assets/gifts/horn-seal.jpg', title: 'Seal Gift Box — Horn', description: 'Premium horn seal engraved with your name and a classical source on the seal body.', priceSpecial: 'NT$2,580', priceOriginal: 'NT$3,200' }
     };
-    if(ttsBtn){
-      ttsBtn.addEventListener('click', ()=>{
-        track('play_tts', {label:'sample_雅寧'});
-        speakCN('雅寧');
-      });
-    }
+    const modal = document.getElementById('giftModal');
+    const openModal = (key) => {
+        const data = giftData[key]; if (!data) return;
+        Object.keys(data).forEach(k => {
+            const el = modal.querySelector(`#modal${k.charAt(0).toUpperCase() + k.slice(1)}`);
+            if (el) {
+                if (el.tagName === 'IMG') el.src = data[k];
+                else el.textContent = data[k];
+            }
+        });
+        modal.querySelector('#modalBuyBtn').href = '#'; // Replace with form link
+        modal.classList.add('visible');
+    };
+    const closeModal = () => modal.classList.remove('visible');
+    document.querySelectorAll('[data-gift]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.gift)));
+    modal.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-    // Tracking helper: works with GA4 if present; falls back to localStorage counts
+    // Tracking helper
     function track(eventName, params={}){
-      try{ if(typeof gtag === 'function') gtag('event', eventName, params);}catch(e){}
-      // local fallback counts
-      try{
-        const k = 'track_'+eventName;
-        const n = parseInt(localStorage.getItem(k)||'0',10)+1;
-        localStorage.setItem(k, String(n));
-        console.log(`[track] ${eventName}`, params, 'count=', n);
-      }catch(e){}
+      try{ if(typeof gtag === 'function') gtag('event', eventName, params); }catch(e){}
     }
-    // Auto-bind tracking to elements with [data-track]
-    document.querySelectorAll('[data-track]').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        const name = el.getAttribute('data-track');
-        const label = el.textContent.trim();
-        track(name, {label});
-      });
-    });
+    document.querySelectorAll('[data-track]').forEach(el => el.addEventListener('click', () => track(el.dataset.track, {label: el.textContent.trim()})));
   </script>
  <script>
-    // Robust: build query and navigate to result.html (supports <button id="goBtn"> and legacy <a data-track="discover-name">)
+    // Form submission logic
     (function(){
-      const $ = (id)=>document.getElementById(id);
-      const q  = (sel)=>document.querySelector(sel);
-  
+      const $ = (id) => document.getElementById(id);
+      
+      let selectedGender = '';
+
       function go(){
-        const name = $('enName')?.value.trim() || '';
+        const name = $('enName')?.value.trim();
         if(!name){
           alert('Please enter your name');
           $('enName')?.focus();
           return;
         }
-        const birth  = $('birth')?.value.trim() || '';
+        const birth = $('birth')?.value.trim();
   
-        // params
-        const qs = new URLSearchParams();
-        qs.set('name', name);
-        if(birth) qs.set('birth', birth); // YYYY-MM-DD
+        const qs = new URLSearchParams({ name });
+        if(birth) qs.set('birth', birth);
+        if(selectedGender) qs.set('gender', selectedGender);
   
-        // remember last (optional)
         try{ localStorage.setItem('hn:last', JSON.stringify({name, birth})); }catch(_){}
   
-        // build a safe relative url even if the site is under a sub-path (e.g., /hanname/)
         const base = location.pathname.replace(/index\.html?$/i, '');
-        const url  = base + 'result.html?' + qs.toString();
-  
-        location.href = url;
+        location.href = base + 'result.html?' + qs.toString();
       }
   
-      // bind to primary button (preferred)
-      const btn = $('goBtn');
-      if(btn){
-        btn.addEventListener('click', (e)=>{ e.preventDefault(); go(); });
-      }
+      $('goBtn')?.addEventListener('click', (e) => { e.preventDefault(); go(); });
   
-      // fallback: bind to legacy anchor if still present
-      const legacy = q('.strip [data-track="discover-name"]');
-      if(!btn && legacy){
-        legacy.addEventListener('click', (e)=>{ e.preventDefault(); go(); });
-      }
-  
-      // Enter key on name input
-      $('enName')?.addEventListener('keydown', (e)=>{
-        if(e.key === 'Enter'){ e.preventDefault(); go(); }
+      $('enName')?.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){ e.preventDefault(); $('birth').focus(); }
       });
-  
-      // restore last (optional)
+      
+      // Gender selection appearance and logic
+      const birthInput = $('birth');
+      const genderSelection = $('genderSelection');
+      const genderBtns = document.querySelectorAll('.gender-btn');
+
+      birthInput?.addEventListener('change', () => {
+          if (birthInput.value) {
+              genderSelection.classList.add('visible');
+          } else {
+              genderSelection.classList.remove('visible');
+          }
+      });
+      
+      genderBtns.forEach(button => {
+          button.addEventListener('click', () => {
+              const currentActive = document.querySelector('.gender-btn.active');
+              if (currentActive) currentActive.classList.remove('active');
+              button.classList.add('active');
+              selectedGender = button.dataset.gender;
+          });
+      });
+
+      // Restore last used values
       try{
         const last = JSON.parse(localStorage.getItem('hn:last') || 'null');
         if(last){
-          if(last.name)  $('enName').value = last.name;
-          if(last.birth) $('birth').value  = last.birth;
+          if(last.name) $('enName').value = last.name;
+          if(last.birth) {
+              $('birth').value = last.birth;
+              birthInput?.dispatchEvent(new Event('change'));
+          }
         }
       }catch(_){}
-  
-      // tiny self-check to help你除錯（開 F12 可看到）
-      console.debug('[HanName] index.js ready. Button=', !!btn, 'Legacy anchor=', !!legacy);
     })();
   </script>
   

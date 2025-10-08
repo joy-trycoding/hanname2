@@ -9,6 +9,44 @@
   <base href="https://joy-trycoding.github.io/hanname2/">
 
   <style>
+    /* Loading overlay */
+.loading-overlay{
+  position: fixed; inset: 0; background: rgba(245,241,232,0.9);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999; transition: opacity .6s ease, visibility .6s ease;
+  overflow:hidden;
+}
+.loading-overlay.hide{ opacity:0; visibility:hidden; }
+
+/* 中央訊息 */
+.loading-msg{
+  position: relative; z-index:2;
+  font-family:'Noto Serif TC','Playfair Display',serif;
+  font-size:22px; color:#444; letter-spacing:.2em;
+  background: rgba(255,255,255,0.6);
+  padding:10px 16px; border-radius:8px; border:1px solid #e7e0d2;
+  box-shadow: 0 6px 30px rgba(0,0,0,.05);
+}
+
+/* 背景漂浮的漢字 */
+.floating-zh{
+  position:absolute; inset:0; overflow:hidden; z-index:1; pointer-events:none;
+}
+
+.floating-zh span{
+  position:absolute; font-family:'Noto Serif TC','Playfair Display',serif;
+  font-size: clamp(18px, 3vw, 32px); color:#000;
+  opacity:.06; white-space:nowrap; user-select:none;
+  animation: floatUp 6s linear infinite;
+}
+
+@keyframes floatUp{
+  0%   { transform: translateY(20px); opacity:0.02; }
+  10%  { opacity:.08; }
+  90%  { opacity:.08; }
+  100% { transform: translateY(-40px); opacity:0; }
+}
+
     :root{ --paper:#F5F1E8; --ink:#1C1B1A; --accent:#C49A6C; --muted:#666; --line:#E5DFD3; }
     *{box-sizing:border-box}
     body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter','Noto Serif TC',serif;}
@@ -50,7 +88,10 @@
       <img src="assets/logo.jpg" alt="HanName logo" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'HanName',style:'font-weight:700;font-family:Playfair Display, Noto Serif TC, serif;font-size:18px;' }))" />
     </a>
   </header>
-
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-msg">你的名字正在設計中…</div>
+    <div id="floatingZh" class="floating-zh"></div>
+  </div>
   <main class="wrap">
     <section id="cert" class="certificate">
       <h1 class="title">Chinese Name Certificate</h1>
@@ -151,119 +192,222 @@
     Water:{female:[{cn:'心如',py:'Xīnrú',classicChar:'心',classicSourceEn:'Literary aphorism',classicSourceZh:'文人語',quoteZh:'一心如水',quoteEn:'Let the heart be like water',meaningEn:'pure-hearted',meaningZh:'心澄如水'}],male:[{cn:'清柏',py:'Qīngbǎi',classicChar:'柏',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'歲寒，然後知松柏之後凋也',quoteEn:'In winter, we see pine and cypress endure',meaningEn:'clarity & integrity',meaningZh:'清正與節操'}]}
   };
 
-  // ====== App init ======
-  (async function init(){
-    // Load data
-    let SURNAME_CATALOG = [];
-    try{
-      SURNAME_CATALOG = await loadJSON(PATH.surnames);
-      console.log('[HanName] surnames.json loaded:', SURNAME_CATALOG.length);
-    }catch(e){
-      console.warn('Failed to load surnames.json — fallback to LIN.', e);
-      SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];
-    }
+ // ====== App init ======
+(async function init(){
 
-    let CLASSICS = [];
-    try{
-      CLASSICS = await loadJSON(PATH.classics);
-      console.log('[HanName] classics.json loaded:', CLASSICS.length);
-    }catch(e){
-      console.warn('Failed to load classics.json', e);
-      CLASSICS = [];
-    }
+// === Loading overlay：先顯示動畫 ===
+const overlay = document.getElementById('loadingOverlay');
+const floatBox = document.getElementById('floatingZh');
 
-    // Classic lookup by single character in given name
-    function findClassic(char){
-      if (!char || !CLASSICS.length) return {};
-      // 依你的 classics.json 結構調整：此處假設每筆含 { char, sourceEn, sourceZh, quoteEn, quoteZh }
-      return CLASSICS.find(c => c.char === char) || {};
-    }
+function spawnFloatingZh(){
+  if (!floatBox) return;
+  floatBox.innerHTML = '';
+  const words = ['你的名字','正在','設計中','優雅','平衡','靈感','文化','典雅','詩意','和鳴'];
+  const W = window.innerWidth, H = window.innerHeight;
+  const N = 16;
+  for(let i=0;i<N;i++){
+    const span = document.createElement('span');
+    span.textContent = words[i % words.length];
+    const x = Math.random() * (W - 80);
+    const y = Math.random() * (H - 40);
+    const delay = (Math.random() * 2).toFixed(2);
+    const dur = (5 + Math.random() * 4).toFixed(2);
+    span.style.left = `${x}px`;
+    span.style.top  = `${y}px`;
+    span.style.animationDuration = `${dur}s`;
+    span.style.animationDelay = `${delay}s`;
+    floatBox.appendChild(span);
+  }
+}
+spawnFloatingZh();
+const floatTimer = setInterval(spawnFloatingZh, 2800);
 
-    // Parse query
-    const qs = new URLSearchParams(location.search);
-    let enName = (qs.get('name') || '').trim();
-    const gender = (qs.get('gender')||'').toLowerCase();
-    const birth = qs.get('birth') || '';
+// === 1) 解析 Query ===
+const qs = new URLSearchParams(location.search);
+let enName = (qs.get('name') || '').trim();
+let gender = (qs.get('gender') || '').toLowerCase();
+const birth = qs.get('birth') || '';
 
-    // Demo fallback
-    const DEMO = [
-      {en:'Emily Smith', gender:'female', birth:'1994-03-02'},
-      {en:'Daniel Lee', gender:'male', birth:'1992-07-15'},
-      {en:'Sophia Chen', gender:'female', birth:'1996-06-28'}
-    ];
-    if(!enName){
-      const demo = DEMO[Math.abs(hash(Date.now().toString()))%DEMO.length];
-      enName = demo.en;
-      if(!qs.get('gender')) qs.set('gender', demo.gender);
-      if(!qs.get('birth')) qs.set('birth', demo.birth);
-    }
+const DEMO = [
+  {en:'Emily Smith', gender:'female', birth:'1994-03-02'},
+  {en:'Daniel Lee', gender:'male',   birth:'1992-07-15'},
+  {en:'Sophia Chen', gender:'female',birth:'1996-06-28'}
+];
+if(!enName){
+  const demo = DEMO[Math.floor(Math.random()*DEMO.length)];
+  enName = demo.en;
+  if(!qs.get('gender')) gender = demo.gender;
+  if(!qs.get('birth')) {
+    // 以 demo 值刷新網址，之後流程一致
+    location.search = `?name=${encodeURIComponent(enName)}&gender=${demo.gender}&birth=${demo.birth}`;
+    return; // 等頁面重新載入
+  }
+}
 
-    // Map English surname -> Chinese surname
-    function mapEnglishToSurname(last){
-      const key = (last||'').toLowerCase().replace(/[^a-z]/g,'');
-      if(!key) return SURNAME_CATALOG.find(s=>s.cn==='林') || SURNAME_CATALOG[0];
-      for(const s of SURNAME_CATALOG) {
-        if(s.aliases && s.aliases.map(a=>a.toLowerCase()).includes(key)) return s;
-      }
-      // fuzzy
-      const iv = key[0] + key.replace(/[bcdfghjklmnpqrstvwxyz]/g,'');
-      let best=null, score=-1;
-      for(const s of SURNAME_CATALOG){
-        const a = (s.aliases && s.aliases[0]) || ((s.py||'')+"").toLowerCase();
-        if(!a) continue;
-        const iv2 = a[0] + a.replace(/[^aeiou]/g,'');
-        let sc = 0; if(a[0]===key[0]) sc+=2; if(iv===iv2) sc+=2; if(a.includes(key.slice(0,2))) sc+=1;
-        if(sc>score){score=sc; best=s;}
-      }
-      return best || SURNAME_CATALOG[0];
-    }
+// 英文姓（最後一段字）
+const parts = enName.split(/\s+/).filter(Boolean);
+const lastEn = (parts.length > 1 ? parts.at(-1) : parts[0] || '').toLowerCase();
 
-    const parts = enName.split(/\s+/);
-    const lastEn = (parts[parts.length-1]||'').toLowerCase();
-    const s = mapEnglishToSurname(lastEn);
-    const cnSurname = s.cn; const pySurname = s.py || '';
+// === 2) 載入資料 ===
+let SURNAME_CATALOG = [];
+let CLASSICS = [];
+let GIVENS = [];
 
-    // Month/day → Five elements
-    let m=1,d=1; if(birth){ const dt=new Date(birth); if(!isNaN(dt)) { m=dt.getMonth()+1; d=dt.getDate(); } }
-    const el = MONTH_TO_ELEMENT[m] || 'Wood';
-    const elZh = ELEMENT_ZH[el] || '木';
+try{
+  SURNAME_CATALOG = await loadJSON(PATH.surnames);
+  console.log('[HanName] surnames.json loaded:', SURNAME_CATALOG.length);
+}catch(e){
+  console.warn('Failed to load surnames.json — fallback to LIN.', e);
+  SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];
+}
 
-    // Zodiac
-    const z = zodiac(m,d) || 'Pisces';
-    const zInfo = ZODIAC_CN_MAP[z] || ZODIAC_CN_MAP['Pisces'];
+if (PATH.classics){
+  try{
+    CLASSICS = await loadJSON(PATH.classics);
+    console.log('[HanName] classics.json loaded:', CLASSICS.length);
+  }catch(e){
+    console.warn('Failed to load classics.json', e);
+    CLASSICS = [];
+  }
+}
 
-    // Pick given name by element & gender
-    const pool = NAME_POOL[el] || NAME_POOL.Wood;
-    const isFemale = (gender||'female').startsWith('f');
-    const list = isFemale ? pool.female : pool.male;
-    const seed = hash(enName + birth + gender);
-    const pickName = pick(list, seed);
+if (PATH.givens){
+  try{
+    GIVENS = await loadJSON(PATH.givens);
+    console.log('[HanName] givenNameData.json loaded:', GIVENS.length);
+  }catch(e){
+    console.warn('Failed to load givenNameData.json', e);
+    GIVENS = [];
+  }
+}
 
-    const cnGiven = pickName.cn;
-    const pyGiven  = pickName.py;
-    const cnFull = cnSurname + cnGiven;
-    const pyFull = `${pySurname} ${pyGiven}`.trim();
+// === 3) 姓氏映射 ===
+function mapEnglishToSurname(last){
+  const key = (last||'').toLowerCase().replace(/[^a-z]/g,'');
+  if(!key) return SURNAME_CATALOG.find(s=>s.cn==='林') || SURNAME_CATALOG[0];
+  for(const s of SURNAME_CATALOG) {
+    if(s.aliases && s.aliases.map(a=>a.toLowerCase()).includes(key)) return s;
+  }
+  // fuzzy（簡易）
+  const iv = key[0] + key.replace(/[bcdfghjklmnpqrstvwxyz]/g,'');
+  let best=null, score=-1;
+  for(const s of SURNAME_CATALOG){
+    const a = (s.aliases && s.aliases[0]) || ((s.py||'')+"").toLowerCase();
+    if(!a) continue;
+    const iv2 = a[0] + a.replace(/[^aeiou]/g,'');
+    let sc = 0; if(a[0]===key[0]) sc+=2; if(iv===iv2) sc+=2; if(a.includes(key.slice(0,2))) sc+=1;
+    if(sc>score){score=sc; best=s;}
+  }
+  return best || SURNAME_CATALOG[0];
+}
+const s = mapEnglishToSurname(lastEn);
+const cnSurname = s.cn;
+const pySurname = s.py || '';
 
-    // Fill UI
-    $('enName').textContent = `English Name: ${enName}`;
-    $('cnFullName').textContent = cnFull;
-    $('pinyinFull').textContent = pyFull;
-    $('tagline').innerHTML = `Your exclusive Chinese name is <span class="em zh">${cnFull}</span>. Meaning: <span class="em">${pickName.meaningEn}</span>｜你的中文名字是「<span class="em zh">${cnFull}</span>」，意涵：<span class="em zh">${pickName.meaningZh}</span>`;
+// === 4) 五行 & 星座 ===
+let m=1,d=1;
+if(birth){
+  const dt=new Date(birth);
+  if(!isNaN(dt)) { m=dt.getMonth()+1; d=dt.getDate(); }
+}
+const el = MONTH_TO_ELEMENT[m] || 'Wood';
+const elZh = ELEMENT_ZH[el] || '木';
 
-    const sNoteEn = s.noteEn || ''; const sEra = s.era || ''; const sFEn = s.famousEn || '';
-    $('surnameLine').textContent = `${cnSurname} (${pySurname}) — ${sNoteEn}`;
-    $('surnameOrigin').innerHTML = `<strong>Origin:</strong> ${sEra} dynasty; famous figure: ${sFEn}`;
-    $('givenLine').textContent = `${cnGiven} (${pickName.py}) — ${pickName.meaningEn}`;
+function zodiac(mm,dd){
+  const z=[['Capricorn',1,19],['Aquarius',2,18],['Pisces',3,20],['Aries',4,19],['Taurus',5,20],['Gemini',6,20],['Cancer',7,22],['Leo',8,22],['Virgo',9,22],['Libra',10,22],['Scorpio',11,21],['Sagittarius',12,21],['Capricorn',12,31]];
+  for(const [name,MM,DD] of z){ if(mm<MM || (mm===MM && dd<=DD)) return name; }
+}
+const z = zodiac(m,d) || 'Pisces';
+const zInfo = ZODIAC_CN_MAP[z] || ZODIAC_CN_MAP['Pisces'];
 
-    // Classic source
-    const classic = findClassic(cnGiven.charAt( pickName.classicChar ? cnGiven.indexOf(pickName.classicChar) : 0 )) || {};
-    $('classicEn').innerHTML =
-      `<strong>Classic Source:</strong> The character “${pickName.classicChar || cnGiven.charAt(0)}” in <em>${classic.sourceEn || pickName.classicSourceEn || ''}</em> — “${classic.quoteEn || pickName.quoteEn || ''}”.`;
-    $('classicZh').innerHTML =
-      `<span class="zh"><strong>典籍出處：</strong>${classic.sourceZh || pickName.classicSourceZh || ''}——「${classic.quoteZh || pickName.quoteZh || ''}」。</span>`;
+// === 5) 種子（可重現/隨機）＆ 挑選 Given Name ===
+const modeRandom = (qs.get('var') || '').toLowerCase() === 'random';   // &var=random 每次都不同
+const salt = qs.get('salt') || '';                                      // &salt=XYZ 手動切版
 
-    // Five elements & Zodiac
-    // ===== 變化模板：五行 + 星座（英文10組 & 中文10組） =====
+function hash2(s){
+  let h = 2166136261 >>> 0; // FNV-1a
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h | 0;
+}
+function makeSeedString(){
+  return [
+    (enName || '').toLowerCase(),
+    (birth  || '').toLowerCase(),
+    (gender || '').toLowerCase(),
+    (lastEn || '').toLowerCase(),
+    (cnSurname || ''),
+    (el || ''),
+    (z || ''),
+    salt
+  ].join('|');
+}
+function seededIndex(list, seedStr){
+  if (!list || !list.length) return -1;
+  let seed = hash2(seedStr);
+  if (modeRandom) {
+    const rand = (crypto?.getRandomValues)
+      ? crypto.getRandomValues(new Uint32Array(1))[0]
+      : Math.floor(Math.random() * 0xFFFFFFFF);
+    seed ^= rand;
+  }
+  return Math.abs(seed) % list.length;
+}
+
+// 最小備援池（真的抓不到 GIVENS 才會用到）
+const FALLBACK_POOL = {
+  Wood:{ female:[{cn:'雅寧',py:'Yǎníng',classicChar:'雅',classicSourceEn:'Shijing · Da Ya',classicSourceZh:'《詩經·大雅》',quoteEn:'Da Ya',quoteZh:'大雅',meaningEn:'elegance & serenity',meaningZh:'優雅與安寧'}],
+         male:  [{cn:'博遠',py:'Bóyuǎn',classicChar:'遠',classicSourceEn:'Qu Yuan · Lisao',classicSourceZh:'屈原·離騷',quoteEn:'The road ahead is long',quoteZh:'路漫漫其修遠兮',meaningEn:'breadth and vision',meaningZh:'胸襟與宏遠'}] },
+  Fire:{ female:[{cn:'曉恩',py:'Xiǎoēn',classicChar:'曉',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteEn:'Dawn breeze and waning moon',quoteZh:'曉風殘月',meaningEn:'gentle warmth',meaningZh:'溫柔晨光'}],
+         male:  [{cn:'文軒',py:'Wénxuān',classicChar:'文',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Be never weary of learning',quoteZh:'學而不厭',meaningEn:'cultured and bright',meaningZh:'文雅明朗'}] },
+  Earth:{ female:[{cn:'靜瑤',py:'Jìngyáo',classicChar:'瑤',classicSourceEn:'Tang poetry',classicSourceZh:'唐詩',quoteEn:'Jade terrace under moon',quoteZh:'瑤台月下',meaningEn:'quiet radiance',meaningZh:'靜中生光'}],
+         male:  [{cn:'志宏',py:'Zhìhóng',classicChar:'志',classicSourceEn:'Mencius',classicSourceZh:'《孟子》',quoteEn:'Set your will on the Way',quoteZh:'志於道，據於德',meaningEn:'great aspiration',meaningZh:'宏遠之志'}] },
+  Metal:{ female:[{cn:'景言',py:'Jǐngyán',classicChar:'言',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Words are the voice of the heart',quoteZh:'言為心聲',meaningEn:'clear expression',meaningZh:'清朗之言'}],
+         male:  [{cn:'宇辰',py:'Yǔchén',classicChar:'辰',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteEn:'A fine time and scene',quoteZh:'良辰美景',meaningEn:'cosmic poise',meaningZh:'宇量與時辰'}] },
+  Water:{ female:[{cn:'心如',py:'Xīnrú',classicChar:'心',classicSourceEn:'Aphorism',classicSourceZh:'文人語',quoteEn:'Let the heart be like water',quoteZh:'一心如水',meaningEn:'pure-hearted',meaningZh:'心澄如水'}],
+         male:  [{cn:'清柏',py:'Qīngbǎi',classicChar:'柏',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Pine & cypress endure',quoteZh:'歲寒然後知松柏之後凋也',meaningEn:'clarity & integrity',meaningZh:'清正與節操'}] }
+};
+
+function pickGivenByData(element, gender){
+  const g = (gender || '').toLowerCase().startsWith('f') ? 'female'
+        : (gender || '').toLowerCase().startsWith('m') ? 'male'
+        : '';
+  let cand = GIVENS.filter(x =>
+    (!element || (x.element||'').toLowerCase() === element.toLowerCase()) &&
+    (!g || (x.gender||'').toLowerCase() === g)
+  );
+  if (!cand.length) cand = GIVENS.filter(x => (x.element||'').toLowerCase() === (element||'').toLowerCase());
+  if (!cand.length) cand = GIVENS.slice();
+  if (!cand.length) {
+    const pool = FALLBACK_POOL[element] || FALLBACK_POOL.Wood || { female:[], male:[] };
+    cand = (g==='female' ? (pool.female||[]) : (pool.male||[]));
+  }
+  const idx = seededIndex(cand, makeSeedString());
+  return idx >= 0 ? cand[idx] : null;
+}
+
+let chosen = pickGivenByData(el, gender);
+if (!chosen) {
+  chosen = FALLBACK_POOL.Wood.female[0];
+}
+
+const cnGiven = chosen.cn;
+const pyGiven  = chosen.py;
+const cnFull = cnSurname + cnGiven;
+const pyFull = `${pySurname} ${pyGiven}`.trim();
+
+// === 6) 經典查找（可用 classics.json 補強 chosen 的引用） ===
+function findClassic(char){
+  if (!char || !CLASSICS.length) return {};
+  return CLASSICS.find(c => c.char === char) || {};
+}
+const primaryChar = chosen.classicChar || cnGiven.charAt(0);
+const classic = findClassic(primaryChar);
+const sourceEn = classic.sourceEn || chosen.classicSourceEn || '';
+const sourceZh = classic.sourceZh || chosen.classicSourceZh || '';
+const quoteEn  = classic.quoteEn  || chosen.quoteEn  || '';
+const quoteZh  = classic.quoteZh  || chosen.quoteZh  || '';
+
+// === 7) 五行/星座模板（10組），用種子選版本（可重現或隨機） ===
 
 // Five-Element EN
 const FE_TEMPLATES_EN = [

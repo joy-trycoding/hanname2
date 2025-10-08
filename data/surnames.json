@@ -1,3 +1,7 @@
+const base = location.pathname.split('/').slice(0, -1).join('/');
+const dataPath = base + '/data/surnames.json';
+SURNAME_CATALOG = await loadJSON(dataPath);
+
 [
   {"en":"Smith","aliases":["smith"],"cn":"司馬","py":"Sīmǎ","wg":"Ssu-ma","era":"Zhou","zhEra":"周代","noteEn":"From ancient military office, implies command & wisdom.","noteZh":"出自周代官職，象徵統帥與智慧。","famousEn":"Sima Qian — Grand Historian of Han.","famousZh":"司馬遷——西漢史學家。"},
   {"en":"Johnson","aliases":["johnson"],"cn":"張","py":"Zhāng","wg":"Chang","era":"Zhou","zhEra":"周代","noteEn":"Bow/extension imagery, openness.","noteZh":"弓長之義，開張延展。","famousEn":"Zhang Qian — envoy of the Silk Road.","famousZh":"張騫——漢代出使西域。"},
@@ -118,7 +122,7 @@
     {"cn":"龔","py":"Gōng","aliases":["gong","kung"],"era":"Zhou","zhEra":"周","noteEn":"Means respectful; from noble Gong family.","noteZh":"意為恭敬，出自恭氏貴族。","famousEn":"Gong Li, actress.","famousZh":"著名演員鞏俐。"},
     {"cn":"程","py":"Chéng","aliases":["cheng","ching"],"era":"Han","zhEra":"漢","noteEn":"Means progress; symbol of discipline.","noteZh":"意為進程，象徵規律與秩序。","famousEn":"Cheng Hao, philosopher.","famousZh":"北宋理學家程顥。"},
     {"cn":"石","py":"Shí","aliases":["shi","shih","shek"],"era":"Zhou","zhEra":"周","noteEn":"Means stone; represents firmness.","noteZh":"意為石，象徵堅毅。","famousEn":"Shi Jianqiao, historical figure.","famousZh":"民國女子俠士施劍翹。"}
-    
+
       {"cn":"游","py":"Yóu","aliases":["you","yu","yau"],"era":"Zhou","zhEra":"周","noteEn":"Derived from the You clan; symbolizes travel and freedom.","noteZh":"出自周代游氏，象徵遨遊與自由。","famousEn":"You Ruo, disciple of Confucius.","famousZh":"孔門弟子游若。"},
       {"cn":"尤","py":"Yóu","aliases":["you","yau","yow"],"era":"Han","zhEra":"漢","noteEn":"Means outstanding; among earliest clan surnames.","noteZh":"意為尤異、傑出，為古老姓氏之一。","famousEn":"You Xiong, mythical ancestor of the Yellow Emperor.","famousZh":"傳說黃帝之先祖有熊氏。"},
       {"cn":"洪","py":"Hóng","aliases":["hong","hung"],"era":"Tang","zhEra":"唐","noteEn":"Means vast or great flood; symbolizes magnanimity.","noteZh":"意為洪大、浩瀚，象徵寬厚胸懷。","famousEn":"Hong Xiuquan, leader of Taiping Rebellion.","famousZh":"太平天國領袖洪秀全。"},

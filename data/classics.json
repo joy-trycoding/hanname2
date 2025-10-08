@@ -1,3 +1,7 @@
+const base = location.pathname.split('/').slice(0, -1).join('/');
+const dataPath = base + '/data/surnames.json';
+SURNAME_CATALOG = await loadJSON(dataPath);
+
 {
     "Shijing": {
       "id": "shijing",

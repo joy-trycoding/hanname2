@@ -6,14 +6,28 @@
   <title>HanName — Your Chinese Name Certificate</title>
   <meta name="description" content="A bilingual, culturally-rich Chinese name certificate with pronunciation, literature sources, five-element analysis, and zodiac insights." />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Noto+Serif+TC:wght@400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <base href="https://joy-trycoding.github.io/hanname2/">
   <script>
-    // small helper to load external JSON (e.g., /data/surnames.json)
     async function loadJSON(path){
-      const res = await fetch(path, {cache:'no-store'});
-      if(!res.ok) throw new Error('Load failed: '+path);
-      return await res.json();
+      try{
+        const res = await fetch(path, { cache: 'no-store' });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      }catch(err){
+        console.warn('[HanName] Fetch failed:', path, err);
+        throw err;
+      }
     }
-  </script>
+    
+    // 👇 自動偵測 base path（支援 GitHub Pages 子資料夾）
+    function getBasePath(){
+      const parts = location.pathname.split('/');
+      if (parts.length > 2) {
+        return '/' + parts[1]; // e.g. "/hanname2"
+      }
+      return '';
+    }
+    </script>
   <style>
     :root{ --paper:#F5F1E8; --ink:#1C1B1A; --accent:#C49A6C; --muted:#666; --line:#E5DFD3; }
     *{box-sizing:border-box}

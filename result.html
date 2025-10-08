@@ -263,10 +263,90 @@
       `<span class="zh"><strong>典籍出處：</strong>${classic.sourceZh || pickName.classicSourceZh || ''}——「${classic.quoteZh || pickName.quoteZh || ''}」。</span>`;
 
     // Five elements & Zodiac
-    $('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> Born in month ${m}, your chart leans to <strong>${el}</strong> (${elZh}). We reinforce balance using the second character “${cnGiven.charAt(1) || cnGiven.charAt(0)}”.`;
-    $('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong> 生於${m}月偏<strong>${elZh}</strong>，以名字的第二字「${cnGiven.charAt(1) || cnGiven.charAt(0)}」補足氣象，趨於中和。</span>`;
-    $('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${z} (${zInfo.cn}). We echo its traits by choosing the first character “${cnGiven.charAt(0)}”.`;
-    $('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${zInfo.cn}座之性格，對應以名字第一字「${cnGiven.charAt(0)}」作為呼應與定調。</span>`;
+    // ===== 變化模板：五行 + 星座（英文10組 & 中文10組） =====
+
+// Five-Element EN
+const FE_TEMPLATES_EN = [
+  "Born in month {month}, your nature aligns with {el} ({elZh}), symbolizing renewal and vitality. The second character “{secondChar}” strengthens inner balance and brings harmony to your temperament.",
+  "The energy of {el} ({elZh}) dominates your birth month, granting creativity and growth. By using “{secondChar}”, your name softens excess vigor and guides it toward stability.",
+  "April’s {el} element flows through you, evoking vitality and empathy. The character “{secondChar}” nurtures this flow, creating calm strength and steady purpose.",
+  "The essence of {elZh} in your chart emphasizes compassion and growth. “{secondChar}” anchors these qualities, bringing balance between idealism and action.",
+  "Your elemental path of {el} lends flexibility and intuition. The name’s latter part “{secondChar}” acts as a steadying root, harmonizing your emotions.",
+  "With {elZh} predominant, you possess natural empathy and an artistic touch. “{secondChar}” enhances resilience, letting you grow through challenges.",
+  "Born under strong {el} energy, you thrive in connection and learning. “{secondChar}” stabilizes your curiosity, grounding inspiration into real action.",
+  "Month {month} aligns with {elZh}, symbol of harmony and renewal. The second glyph “{secondChar}” enriches emotional balance and steady growth.",
+  "The presence of {el} grants resilience and compassion. “{secondChar}” weaves stability into your bright personality, balancing heart and reason.",
+  "{elZh} rules your birth season, gifting openness and adaptability. “{secondChar}” completes this harmony, allowing you to stay calm amid growth."
+];
+
+// Zodiac EN
+const ZO_TEMPLATES_EN = [
+  "As a {zodiacEn} ({zodiacZh}), you’re bold and passionate — the first character “{firstChar}” channels that fire into refinement and grace.",
+  "{zodiacEn} souls seek adventure; “{firstChar}” mirrors that spirit yet adds poise, helping you express courage with wisdom.",
+  "A true {zodiacEn} is radiant and driven — “{firstChar}” transforms impulse into confident charm, revealing natural leadership.",
+  "Under the sign of {zodiacEn}, the word “{firstChar}” refines your fiery drive into creativity and influence.",
+  "{zodiacEn} hearts blaze with independence — “{firstChar}” channels this flame toward grace and authentic self-expression.",
+  "As a {zodiacEn}, “{firstChar}” celebrates your fearless heart and helps project confidence that inspires others.",
+  "The {zodiacEn} constellation symbolizes courage and renewal — “{firstChar}” magnifies your pioneering light.",
+  "For a spirited {zodiacEn}, “{firstChar}” acts as a talisman of clarity, helping channel passion into purpose.",
+  "A {zodiacEn} thrives on challenge; “{firstChar}” refines your impulsive side, turning courage into charisma.",
+  "{zodiacEn} energy radiates confidence — “{firstChar}” echoes that light, bringing you both elegance and magnetism."
+];
+
+// 五行 Zh
+const FE_TEMPLATES_ZH = [
+  "生於{month}月，命格偏{elZh}，象徵生長與希望。名字第二字「{secondChar}」調和五行，使氣質更為均衡穩定。",
+  "{elZh}之氣主導你的出生月，帶來創造與靈性。「{secondChar}」一字平衡旺盛的生命力，使你兼具柔韌與堅定。",
+  "{month}月的{elZh}之性，賦予你成長與同理心。「{secondChar}」溫潤其間，使能量流動而不躁，內外和諧。",
+  "五行屬{elZh}者，多具包容與進取心。「{secondChar}」使其氣象中庸，讓理想與行動達到平衡。",
+  "命格中{elZh}旺盛，靈氣流動，「{secondChar}」如根般穩定，讓情感與理智共生。",
+  "{elZh}主仁與藝，「{secondChar}」增其堅韌，使你在挑戰中依舊成長綻放。",
+  "五行偏{elZh}，你天生善感且富學習力，「{secondChar}」穩定情緒，使靈感化為實踐。",
+  "生於{month}月，承{elZh}之氣，性情平和而具包容。「{secondChar}」令思緒更清明，成就長遠之志。",
+  "命帶{elZh}，氣質堅毅溫厚，「{secondChar}」潤化剛強，使理性與感性相得益彰。",
+  "{elZh}之性，使你開朗而善應變。「{secondChar}」補足五行，讓進取與寧靜並存。"
+];
+
+// 星象 Zh
+const ZO_TEMPLATES_ZH = [
+  "屬於{zodiacZh}的你天性熱情果敢，第一字「{firstChar}」將這份火焰化為優雅與自信。",
+  "{zodiacZh}象徵冒險與領先，「「{firstChar}」讓這份衝勁更顯沉著，展現勇氣與智慧並存。",
+  "典型的{zodiacZh}熱情率真，「{firstChar}」字化動為靜，讓自信更具魅力與感染力。",
+  "{zodiacZh}象徵勇氣與光明，「{firstChar}」延展此特質，使你以創意與力量影響他人。",
+  "{zodiacZh}的靈魂熱烈而自由，「{firstChar}」導引這股能量化為真誠的表達與領導氣場。",
+  "你的{zodiacZh}個性剛烈真誠，「{firstChar}」平衡其鋒芒，使魅力更顯從容。",
+  "{zodiacZh}象徵重生與勇氣，「{firstChar}」讓你的開創精神更具方向。",
+  "作為{zodiacZh}，你具領袖氣勢，「{firstChar}」呼應此光，使行動更有魅力與感染力。",
+  "{zodiacZh}面對挑戰不懼，「{firstChar}」收斂衝動，轉化為魅力與領導力。",
+  "{zodiacZh}能量熱烈自信，「{firstChar}」映照此光，成就優雅與堅毅兼具的特質。"
+];
+
+// 小工具：字串模板套值
+function formatTpl(tpl, obj){
+  return tpl.replace(/\{(\w+)\}/g, (_,k)=> obj[k] ?? '');
+}
+
+// 讓變化可「重現」：用 name+birth+cnFull 當種子，固定落在 0~9
+const templateIndex = Math.abs(hash(enName + (birth||'') + (cnFull||''))) % 10;
+
+// 建立模板上下文
+const ctx = {
+  month: m,                 // 你的程式中「月份」變數（數字）
+  el,                       // 五行英文（Wood/Fire/...）
+  elZh,                     // 五行中文（木/火/...）
+  firstChar: cnGiven.charAt(0),
+  secondChar: cnGiven.charAt(1) || cnGiven.charAt(0),
+  zodiacEn: z,              // 星座英文（Aries...）
+  zodiacZh: zInfo.cn,       // 星座中文（牡羊...）
+  traitEn: zInfo.traitEn,   // 星座特質英文（可用在你要擴充的模板）
+  traitZh: zInfo.traitZh    // 星座特質中文
+};
+
+// 寫回 DOM
+$('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> ${formatTpl(FE_TEMPLATES_EN[templateIndex], ctx)}`;
+$('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong>${formatTpl(FE_TEMPLATES_ZH[templateIndex], ctx)}</span>`;
+$('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${formatTpl(ZO_TEMPLATES_EN[templateIndex], ctx)}`;
+$('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${formatTpl(ZO_TEMPLATES_ZH[templateIndex], ctx)}</span>`;
 
     // TTS
     function speak(text){

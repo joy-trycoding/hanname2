@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HanName — Your Chinese Name Certificate</title>
+  <meta name="description" content="A bilingual, culturally-rich Chinese name certificate with pronunciation, literature sources, five-element analysis, and zodiac insights." />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Noto+Serif+TC:wght@400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script>
+    // small helper to load external JSON (e.g., /data/surnames.json)
+    async function loadJSON(path){
+      const res = await fetch(path, {cache:'no-store'});
+      if(!res.ok) throw new Error('Load failed: '+path);
+      return await res.json();
+    }
+  </script>
+  <style>
+    :root{ --paper:#F5F1E8; --ink:#1C1B1A; --accent:#C49A6C; --muted:#666; --line:#E5DFD3; }
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter','Noto Serif TC',serif;}
+    a{color:inherit}
+    .header{display:flex; align-items:center; gap:10px; padding:10px 16px}
+    .header .brand img{height:32px}
+
+    .wrap{max-width:940px; margin:0 auto; padding:16px}
+    .certificate{background:#fff; border:8px double var(--line); border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,.06); padding:24px;}
+    .title{font-family:'Playfair Display','Noto Serif TC',serif; text-align:center; font-size:28px; margin:6px 0 2px}
+    .subtitle{text-align:center; color:#444; font-size:13px; margin:0 0 10px}
+    .divider{height:2px; background:var(--line); margin:12px 0 18px}
+
+    .name-block{display:grid; gap:4px; justify-items:center; margin:8px 0 16px}
+    .cn-name{font-family:'Noto Serif TC','Playfair Display',serif; font-size:46px; font-weight:700; letter-spacing:.06em}
+    .pinyin{font-size:16px; color:var(--accent)}
+    .btn{appearance:none; border:1px solid var(--ink); background:var(--ink); color:#fff; padding:8px 14px; border-radius:999px; cursor:pointer}
+    .btn:hover{opacity:.92}
+
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+    .panel{border:1px solid var(--line); border-radius:12px; padding:14px; background:#fff}
+    .panel h3{font-family:'Playfair Display','Noto Serif TC',serif; font-size:18px; margin:0 0 8px}
+    .panel p{margin:6px 0; line-height:1.7}
+    .em{color:#222; font-weight:600}
+    .zh{font-family:'Noto Serif TC','Playfair Display',serif}
+
+    .analysis{margin-top:10px}
+
+    .actions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:16px}
+
+    .footnote{margin-top:12px; font-size:12px; color:#666; text-align:center}
+
+    @media (max-width: 880px){ .grid{grid-template-columns:1fr} .cn-name{font-size:40px} }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="index.html" aria-label="Back to HanName home">
+      <img src="assets/logo.jpg" alt="HanName logo" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'HanName',style:'font-weight:700;font-family:Playfair Display, Noto Serif TC, serif;font-size:18px;' }))" />
+    </a>
+  </header>
+
+  <main class="wrap">
+    <section id="cert" class="certificate">
+      <h1 class="title">Chinese Name Certificate</h1>
+      <p class="subtitle">A personalized cultural identity crafted from sound, meaning, literature, Five Elements, and zodiac.</p>
+      <div class="divider"></div>
+
+      <div class="name-block">
+        <div id="enName" class="en-name" style="font-size:14px; color:#555">English Name: —</div>
+        <div id="cnFullName" class="cn-name">—</div>
+        <div class="pinyin"><span id="pinyinFull">—</span> <button id="speak" class="btn" data-track="play-tts">🔊</button></div>
+        <div id="tagline" style="font-size:14px; color:#333"></div>
+      </div>
+
+      <div class="grid">
+        <article class="panel" id="surnamePanel">
+          <h3>Surname · 姓氏</h3>
+          <p id="surnameLine"></p>
+          <p id="surnameOrigin"></p>
+        </article>
+
+        <article class="panel" id="givenPanel">
+          <h3>Given Name · 名字</h3>
+          <p id="givenLine"></p>
+          <div class="analysis">
+            <p id="classicEn"></p>
+            <p id="classicZh" class="zh"></p>
+            <p id="fiveElEn"></p>
+            <p id="fiveElZh" class="zh"></p>
+            <p id="zodiacEn"></p>
+            <p id="zodiacZh" class="zh"></p>
+          </div>
+        </article>
+      </div>
+
+      <div class="actions">
+        <button id="download" class="btn" data-track="download-cert">Download Certificate</button>
+        <button id="share" class="btn" data-track="share">Share</button>
+        <a id="gift" class="btn" href="index.html#pricing" data-track="seal-gift">Create Your Seal Gift</a>
+      </div>
+
+      <p class="footnote">Tip: Save this certificate as a PDF or print it.｜小提醒：可下載 PDF 或列印保存。</p>
+    </section>
+  </main>
+
+  <!-- libs for PDF download (client-side) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+  // Keep utilities small & global
+  const $ = (id)=>document.getElementById(id);
+  const pick = (arr, seed)=> arr[Math.abs(seed)%arr.length];
+  const hash = (s)=> s.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0) | 0, 0);
+
+  // Five elements by month (demo mapping)
+  const MONTH_TO_ELEMENT = {1:'Water',2:'Wood',3:'Wood',4:'Wood',5:'Fire',6:'Fire',7:'Fire',8:'Earth',9:'Metal',10:'Metal',11:'Water',12:'Water'};
+  const ELEMENT_ZH = {Wood:'木', Fire:'火', Earth:'土', Metal:'金', Water:'水'};
+
+  // Western zodiac
+  function zodiac(m,d){
+    const z=[['Capricorn',1,19],['Aquarius',2,18],['Pisces',3,20],['Aries',4,19],['Taurus',5,20],['Gemini',6,20],['Cancer',7,22],['Leo',8,22],['Virgo',9,22],['Libra',10,22],['Scorpio',11,21],['Sagittarius',12,21],['Capricorn',12,31]];
+    for(const [name,mm,dd] of z){ if(m<mm || (m===mm && d<=dd)) return name; }
+  }
+  const ZODIAC_CN_MAP = {
+    Pisces:{cn:'雙魚', cnStar:'奎宿（示例）', traitEn:'sensitive and insightful', traitZh:'感性而具洞察力'},
+    Aries:{cn:'牡羊', cnStar:'角宿（示例）', traitEn:'decisive and pioneering', traitZh:'果敢開創'},
+    Taurus:{cn:'金牛', cnStar:'昴宿（示例）', traitEn:'grounded and persevering', traitZh:'踏實堅定'},
+    Gemini:{cn:'雙子', cnStar:'軫宿（示例）', traitEn:'curious and expressive', traitZh:'好奇善言'},
+    Cancer:{cn:'巨蟹', cnStar:'房宿（示例）', traitEn:'nurturing and protective', traitZh:'關懷守護'},
+    Leo:{cn:'獅子', cnStar:'心宿（示例）', traitEn:'radiant and confident', traitZh:'自信閃耀'},
+    Virgo:{cn:'處女', cnStar:'女宿（示例）', traitEn:'refined and meticulous', traitZh:'細膩講究'},
+    Libra:{cn:'天秤', cnStar:'衡宿（示例）', traitEn:'balanced and graceful', traitZh:'平衡優雅'},
+    Scorpio:{cn:'天蠍', cnStar:'尾宿（示例）', traitEn:'deep and resolute', traitZh:'深沉果決'},
+    Sagittarius:{cn:'射手', cnStar:'箕宿（示例）', traitEn:'far-sighted and free', traitZh:'遠志自由'},
+    Capricorn:{cn:'摩羯', cnStar:'牛宿（示例）', traitEn:'enduring and disciplined', traitZh:'韌性自律'},
+    Aquarius:{cn:'水瓶', cnStar:'危宿（示例）', traitEn:'original and humane', traitZh:'創新博愛'}
+  };
+
+  // Given-name pool (demo)
+  const NAME_POOL = {
+    Wood:{
+      female:[
+        {cn:'清雲',py:'Qīngyún', classicChar:'雲', classicSourceEn:'Wang Wei, Tang poetry', classicSourceZh:'王維·唐詩', quoteZh:'雲無心以出岫', quoteEn:'Clouds go freely over hills', meaningEn:'clarity and freedom', meaningZh:'清澈自由'},
+        {cn:'雅寧',py:'Yǎníng', classicChar:'雅', classicSourceEn:'Shijing · Da Ya (title uses 雅)', classicSourceZh:'《詩經·大雅》', quoteZh:'大雅', quoteEn:'Da Ya', meaningEn:'elegance & serenity', meaningZh:'優雅與安寧'}
+      ],
+      male:[
+        {cn:'博遠',py:'Bóyuǎn', classicChar:'遠', classicSourceEn:'Qu Yuan · Lisao imagery', classicSourceZh:'屈原·離騷意象', quoteZh:'路漫漫其修遠兮', quoteEn:'The road ahead is long and far', meaningEn:'breadth and vision', meaningZh:'胸襟與宏遠'}
+      ]
+    },
+    Fire:{
+      female:[
+        {cn:'曉恩',py:'Xiǎoēn', classicChar:'曉', classicSourceEn:'Song Ci imagery', classicSourceZh:'宋詞意象', quoteZh:'曉風殘月', quoteEn:'Dawn breeze and waning moon', meaningEn:'gentle warmth', meaningZh:'溫柔晨光'}
+      ],
+      male:[
+        {cn:'文軒',py:'Wénxuān', classicChar:'文', classicSourceEn:'Analects', classicSourceZh:'《論語》', quoteZh:'學而不厭', quoteEn:'Be never weary of learning', meaningEn:'cultured and bright', meaningZh:'文雅明朗'}
+      ]
+    },
+    Earth:{
+      female:[
+        {cn:'靜瑤',py:'Jìngyáo', classicChar:'瑤', classicSourceEn:'Tang poetry', classicSourceZh:'唐詩', quoteZh:'瑤台月下', quoteEn:'Under moonlight at Jade Terrace', meaningEn:'quiet radiance', meaningZh:'靜中生光'}
+      ],
+      male:[
+        {cn:'志宏',py:'Zhìhóng', classicChar:'志', classicSourceEn:'Mencius', classicSourceZh:'《孟子》', quoteZh:'志於道，據於德', quoteEn:'Set your will on the Way', meaningEn:'great aspiration', meaningZh:'宏遠之志'}
+      ]
+    },
+    Metal:{
+      female:[
+        {cn:'景言',py:'Jǐngyán', classicChar:'言', classicSourceEn:'Analects', classicSourceZh:'《論語》', quoteZh:'言為心聲', quoteEn:'Words are the voice of the heart', meaningEn:'clear expression', meaningZh:'清朗之言'}
+      ],
+      male:[
+        {cn:'宇辰',py:'Yǔchén', classicChar:'辰', classicSourceEn:'Song Ci', classicSourceZh:'宋詞', quoteZh:'良辰美景', quoteEn:'A fine time and beautiful scene', meaningEn:'cosmic poise', meaningZh:'宇量與時辰'}
+      ]
+    },
+    Water:{
+      female:[
+        {cn:'心如',py:'Xīnrú', classicChar:'心', classicSourceEn:'Literary aphorism', classicSourceZh:'文人語', quoteZh:'一心如水', quoteEn:'Let the heart be like water', meaningEn:'pure-hearted', meaningZh:'心澄如水'}
+      ],
+      male:[
+        {cn:'清柏',py:'Qīngbǎi', classicChar:'柏', classicSourceEn:'Analects', classicSourceZh:'《論語》', quoteZh:'歲寒，然後知松柏之後凋也', quoteEn:'In winter, we see pine and cypress endure', meaningEn:'clarity & integrity', meaningZh:'清正與節操'}
+      ]
+    }
+  };
+
+  // Main async init — load external data first, then render
+  (async function init(){
+    let SURNAME_CATALOG = [];
+    try{
+      SURNAME_CATALOG = await fetch('data/surnames.json');
+    }catch(e){
+      console.warn('Failed to load surnames.json — fallback to LIN.', e);
+      SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];
+    }
+
+    function mapEnglishToSurname(last){
+      const key = (last||'').toLowerCase().replace(/[^a-z]/g,'');
+      if(!key) return SURNAME_CATALOG.find(s=>s.cn==='林') || SURNAME_CATALOG[0];
+      // 1) direct alias hit
+      for(const s of SURNAME_CATALOG) {
+        if(s.aliases && s.aliases.map(a=>a.toLowerCase()).includes(key)) return s;
+      }
+      // 2) similarity: first letter + vowel contour
+      const iv = key[0] + key.replace(/[bcdfghjklmnpqrstvwxyz]/g,'');
+      let best=null, score=-1;
+      for(const s of SURNAME_CATALOG){
+        const a = (s.aliases && s.aliases[0]) || ((s.py||'')+"").toLowerCase();
+        if(!a) continue;
+        const iv2 = a[0] + a.replace(/[^aeiou]/g,'');
+        let sc = 0; if(a[0]===key[0]) sc+=2; if(iv===iv2) sc+=2; if(a.includes(key.slice(0,2))) sc+=1;
+        if(sc>score){score=sc; best=s;}
+      }
+      return best || SURNAME_CATALOG[0];
+    }
+
+    // ---------- Build result ----------
+    const qs = new URLSearchParams(location.search);
+    let enName = (qs.get('name') || '').trim();
+    const gender = (qs.get('gender')||'').toLowerCase();
+    const birth = qs.get('birth') || '';
+
+    // if no params, pick a demo record by hash
+    const DEMO = [
+      {en:'Emily Smith', gender:'female', birth:'1994-03-02'},
+      {en:'Daniel Lee', gender:'male', birth:'1992-07-15'},
+      {en:'Sophia Chen', gender:'female', birth:'1996-06-28'}
+    ];
+    if(!enName){ const demo = DEMO[Math.abs(hash(Date.now().toString()))%DEMO.length]; enName = demo.en; if(!qs.get('gender')) qs.set('gender', demo.gender); if(!qs.get('birth')) qs.set('birth', demo.birth); }
+
+    const parts = enName.split(/\s+/);
+    const lastEn = (parts[parts.length-1]||'').toLowerCase();
+    const s = mapEnglishToSurname(lastEn);
+    const cnSurname = s.cn; const pySurname = s.py || '';
+
+    // month/day → five elements
+    let m=1,d=1; if(birth){ const dt=new Date(birth); if(!isNaN(dt)) { m=dt.getMonth()+1; d=dt.getDate(); } }
+    const el = MONTH_TO_ELEMENT[m] || 'Wood';
+    const elZh = ELEMENT_ZH[el] || '木';
+
+    // zodiac
+    const z = zodiac(m,d) || 'Pisces';
+    const zInfo = ZODIAC_CN_MAP[z] || ZODIAC_CN_MAP['Pisces'];
+
+    // pick given name by element & gender
+    const pool = NAME_POOL[el] || NAME_POOL.Wood;
+    const isFemale = (gender||'female').startsWith('f');
+    const list = isFemale ? pool.female : pool.male;
+    const seed = hash(enName + birth + gender);
+    const pickName = pick(list, seed);
+
+    const cnGiven = pickName.cn;
+    const pyGiven  = pickName.py; // already proper unicode
+
+    const cnFull = cnSurname + cnGiven;
+    const pyFull = `${pySurname} ${pyGiven}`.trim();
+
+    // Fill UI
+    $('enName').textContent = `English Name: ${enName}`;
+    $('cnFullName').textContent = cnFull;
+    $('pinyinFull').textContent = pyFull;
+    $('tagline').innerHTML = `Your exclusive Chinese name is <span class="em zh">${cnFull}</span>. Meaning: <span class="em">${pickName.meaningEn}</span>｜你的中文名字是「<span class="em zh">${cnFull}</span>」，意涵：<span class="em zh">${pickName.meaningZh}</span>`;
+
+    const sPy = s.py || '';
+    const sEra = s.era || ''; const sZhEra = s.zhEra || '';
+    const sNoteEn = s.noteEn || ''; const sNoteZh = s.noteZh || '';
+    const sFEn = s.famousEn || ''; const sFZh = s.famousZh || '';
+
+    $('surnameLine').textContent = `${cnSurname} (${sPy}) — ${sNoteEn}`;
+    $('surnameOrigin').innerHTML = `<strong>Origin:</strong> ${sEra} dynasty; famous figure: ${sFEn}`;
+    
+    $('givenLine').textContent = `${cnGiven} (${pickName.py}) — ${pickName.meaningEn}`;
+
+    // Classic source (bilingual, with quote)
+    $('classicEn').innerHTML = `<strong>Classic Source:</strong> The character “${pickName.classicChar}” in <em>${pickName.classicSourceEn}</em> — “${pickName.quoteEn}”.`;
+$('classicZh').innerHTML = `<span class="zh"><strong>典籍出處：</strong> 名字中的「${pickName.classicChar}」取自${pickName.classicSourceZh}——「${pickName.quoteZh}」。</span>`;
+
+    // Five elements analysis
+    $('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> Born in month ${m}, your chart leans to <strong>${el}</strong> (${elZh}). We reinforce balance using the second character “${cnGiven.charAt(1) || cnGiven.charAt(0)}”.`;
+$('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong> 生於${m}月偏<strong>${elZh}</strong>，以名字的第二字「${cnGiven.charAt(1) || cnGiven.charAt(0)}」補足氣象，趨於中和。</span>`;
+
+    // Zodiac analysis
+    $('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${z} (${zInfo.cn}). We echo its traits by choosing the first character “${cnGiven.charAt(0)}”.`;
+$('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${zInfo.cn}座之性格，對應以名字第一字「${cnGiven.charAt(0)}」作為呼應與定調。</span>`;
+
+    // TTS (ensure voices loaded once)
+    function speak(text){
+      const u = new SpeechSynthesisUtterance(text);
+      const v = speechSynthesis.getVoices().find(v=>/zh|cmn|Chinese/i.test(v.lang));
+      if(v) u.voice=v; u.lang=v?.lang||'zh-TW'; u.rate=.96; u.pitch=1.04; speechSynthesis.cancel(); speechSynthesis.speak(u);
+    }
+    document.getElementById('speak').addEventListener('click', ()=> speak(cnFull));
+    if (speechSynthesis && typeof speechSynthesis.onvoiceschanged !== 'undefined') {
+      speechSynthesis.onvoiceschanged = ()=>{}; // trigger load
+    }
+
+    // Download PDF
+    document.getElementById('download').addEventListener('click', async ()=>{
+      const { jsPDF } = window.jspdf;
+      const node = document.querySelector('#cert');
+      const canvas = await html2canvas(node, {scale:2});
+      const img = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p','pt','a4');
+      const pageW = pdf.internal.pageSize.getWidth();
+      const ratio = pageW / canvas.width; const h = canvas.height * ratio;
+      pdf.addImage(img,'PNG',0,10,pageW,h);
+      pdf.save(`HanName_${cnFull}.pdf`);
+    });
+
+    // Share
+    document.getElementById('share').addEventListener('click', async ()=>{
+      const url = location.href;
+      const text = `My Chinese name on HanName: ${cnFull} (${pyFull}).`;
+      if(navigator.share){ try{ await navigator.share({title:'HanName Certificate', text, url}); }catch(e){} }
+      else{ await navigator.clipboard.writeText(url); alert('Link copied!'); }
+    });
+  })();
+  </script>
+</body>
+</html>

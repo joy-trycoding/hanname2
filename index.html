@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HanName — Your Chinese Identity, Personalized</title>
+  <meta name="description" content="Discover a Chinese name crafted from sound, meaning, and heritage. Download a personalized certificate or order a traditional seal gift box." />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Noto+Serif+TC:wght@400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --paper:#F5F1E8; /* warm ivory */
+      --paper-2:#F8F4EB;
+      --ink:#1C1B1A;   /* deep ink */
+      --accent:#C49A6C;/* gold brown */
+      --accent-2:#8E6A3E; /* darker gold */
+      --muted:#6B6B6B;
+      --line:#E5DFD3;
+      --btn:#1C1B1A;
+      --btn-text:#FFFFFF;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--paper); color:var(--ink);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Arial, sans-serif;
+      line-height:1.6;
+    }
+    /* --- Decorative cultural vibe: subtle rice paper + lattice pattern --- */
+    .rice{
+      position:fixed; inset:0; pointer-events:none; z-index:-1;
+      background:
+        radial-gradient(1000px 600px at 120% -10%, #b48c4a20, #0000 60%),
+        radial-gradient(900px 600px at -20% 110%, #b48c4a18, #0000 60%),
+        repeating-linear-gradient(145deg, #0000 0 24px, #b48c4a0d 24px 25px),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><g fill="none" stroke="%23d8cfbf" stroke-opacity="0.5"><path d="M0 80h160M80 0v160"/><circle cx="80" cy="80" r="78"/></g></svg>');
+      background-blend-mode: multiply;
+      opacity:.6;
+    }
+
+    header{
+      position:sticky; top:0; z-index:20; backdrop-filter:saturate(180%) blur(6px);
+      background:rgba(245,241,232,.9); border-bottom:1px solid var(--line);
+    }
+    .container{max-width:1100px; margin:0 auto; padding:0 20px}
+    .nav{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
+    .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit}
+    .brand img{height:32px; width:auto}
+    .brand-title{font-family:'Playfair Display','Noto Serif TC',serif; font-weight:700; letter-spacing:.2px}
+    .brand-sub{font-size:12px; color:var(--muted)}
+
+    .cta-row{display:flex; gap:12px; align-items:center}
+    .btn{appearance:none; border:1px solid #0000; padding:12px 16px; border-radius:999px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:opacity .2s ease, transform .2s ease}
+    .btn-primary{background:var(--btn); color:var(--btn-text)}
+    .btn-primary:hover{opacity:.92; transform:translateY(-1px)}
+    .btn-ghost{background:transparent; border-color:var(--ink); color:var(--ink)}
+    .btn-ghost:hover{background:#00000010}
+
+    /* --- Section base with fade transitions --- */
+    section.section{opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease; will-change:opacity, transform}
+    section.section.is-visible{opacity:1; transform:none}
+    section.section.is-dim{opacity:.35}
+
+    /* Hero */
+    .hero{display:grid; grid-template-columns:1.2fr 1fr; gap:40px; padding:54px 0 34px}
+    .hero-badge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:#fff7; font-size:12px}
+    .hero h1{font-family:'Playfair Display','Noto Serif TC',serif; font-size:clamp(28px,3.5vw,46px); line-height:1.2; margin:14px 0}
+    .hero p.lede{font-size:clamp(15px,2.1vw,18px); color:#2a2a2a; margin:10px 0 18px}
+    .hero-card{background:#fff; border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:0 6px 30px rgba(0,0,0,.06)}
+
+    /* Sample form strip */
+    .strip{display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 10px}
+    input[type="text"], input[type="date"]{
+      flex:1 1 220px; border:1px solid var(--line); background:#fff; padding:14px 16px; border-radius:12px; outline:none; font:inherit; min-height:48px
+    }
+    .helper{font-size:12px; color:var(--muted)}
+
+    /* Feature trio */
+    .features{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:26px 0}
+    .feature{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px}
+    .feature h3{font-family:'Noto Serif TC','Playfair Display',serif; margin:6px 0 6px; font-size:18px}
+    .feature .icon{font-size:20px}
+    .sep{height:1px; background:linear-gradient(90deg, #0000, var(--line), #0000); margin:20px 0}
+
+    /* Stories (case studies) */
+    .stories{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+    .story{background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px}
+    .story blockquote{margin:0; font-size:15px}
+    .story .who{margin-top:10px; font-size:13px; color:var(--muted)}
+
+    /* Counter band */
+    .band{background:var(--paper-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:14px 0}
+    .counter{display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700}
+    .odometer{font-variant-numeric: tabular-nums; letter-spacing:.5px}
+
+    /* Pricing cards */
+    .pricing{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+
+    /* Responsive */
+    @media (max-width: 1024px){
+      .container{padding:0 16px}
+    }
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr; gap:22px; padding:28px 0}
+      .features{grid-template-columns:1fr}
+      .stories{grid-template-columns:1fr}
+      .pricing{grid-template-columns:1fr}
+      .cta-row{display:none}
+    }
+      /* Sticky bottom CTA */
+    .sticky-cta{position:fixed; left:0; right:0; bottom:0; z-index:30; background:rgba(245,241,232,.96); border-top:1px solid var(--line); backdrop-filter:saturate(180%) blur(6px)}
+    .sticky-cta .cta-wrap{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0}
+    .sticky-cta .cta-text{font-weight:600}
+    @media (min-width: 901px){.sticky-cta{display:none}}
+  </style>
+  <script>
+    // Minimal Google Analytics helper (optional).
+    // If you add GA4, include gtag.js in <head> and these events will be sent automatically.
+    // Example GA4 snippet to add above this script:
+    // <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+    // <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-XXXXXXX');</script>
+  </script>
+</head>
+<body>
+  <div class="rice" aria-hidden="true"></div>
+  <header>
+    <div class="container nav">
+      <!-- LOGO: replace src with your actual logo file at /assets/logo.svg  -->
+      <a class="brand" href="#" aria-label="HanName home">
+        <img src="assets/logo.svg" alt="HanName logo" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'HanName',style:'font-weight:700;font-family:Playfair Display, Noto Serif TC, serif;font-size:20px;'}))" />
+        <div>
+          <div class="brand-title">HanName</div>
+          <div class="brand-sub">Chinese Identity Generator</div>
+        </div>
+      </a>
+      <nav class="cta-row">
+        <a class="btn btn-ghost" href="#how">How it works</a>
+        <a class="btn btn-primary" href="#start">Discover your name</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="section hero" id="start">
+      <div>
+        <span class="hero-badge" aria-label="badge">✨ Culture · Sound · Meaning</span>
+        <h1>Discover your <em>Chinese identity</em> — one name at a time.</h1>
+        <p class="lede">HanName crafts a Chinese name that fits your story. We blend sound, meaning, and heritage — and can reflect your birthday or zodiac — into a beautiful identity you can own, share, and even seal in a traditional stamp.</p>
+        <div class="strip" role="form" aria-label="quick start">
+          <input type="text" id="enName" placeholder="Enter your name" aria-label="Your name" />
+          <input type="date" id="birth" aria-label="Birthday (optional)" />
+          <button class="btn btn-primary" id="goBtn" data-track="discover-name">
+            Get my Chinese name
+          </button>
+        </div>
+        <div class="helper">No account needed • Free to try • Upgrade for certificate & seal gift box</div>
+
+        <div class="features">
+          <div class="feature">
+            <div class="icon">📜</div>
+            <h3>Meaning & Heritage</h3>
+            <p>Each name includes its meanings, classical references, and poetic tone — explained in clear English.</p>
+          </div>
+          <div class="feature">
+            <div class="icon">🔊</div>
+            <h3>Sound You’ll Love</h3>
+            <p>See pinyin and tone marks, hear how it sounds, and get easy pronunciation tips.</p>
+          </div>
+          <div class="feature">
+            <div class="icon">🪪</div>
+            <h3>Certificate & Seal</h3>
+            <p>Download a personalized certificate or order a traditional name seal gift box.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview card (feel/atmosphere of cultural identity) -->
+      <aside class="hero-card" aria-label="sample certificate preview">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+          <div style="font-family:'Noto Serif TC','Playfair Display',serif; font-size:22px;">示例 · Sample</div>
+          <div style="font-size:12px; color:var(--muted)">Preview</div>
+        </div>
+        <div class="sep"></div>
+        <div style="display:grid; grid-template-columns: 1fr; gap:10px">
+          <div>
+            <div style="font-family:'Noto Serif TC',serif; font-size:36px; font-weight:600; letter-spacing:.06em;">雅寧</div>
+            <div style="color:var(--muted); font-size:14px; margin-top:2px">Yǎníng · elegant & tranquil</div>
+          </div>
+          <div style="font-size:14px; color:#272727">
+            <strong>Meaning.</strong> “雅” (graceful refinement), “寧” (calm, serene). Balanced qualities for air signs.
+          </div>
+          <div style="font-size:13px; color:var(--muted)">
+            From <em>Classic of Poetry</em> (《詩經》) imagery of elegance and harmony. Crafted by sound (yaˇ · níng) and element balance.
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; align-items:center">
+            <a class="btn btn-ghost" href="#how" data-track="see-how">See how it works</a>
+            <a class="btn btn-primary" href="#pricing" data-track="get-certificate">Get your certificate</a>
+            <button class="btn btn-ghost" type="button" id="ttsBtn" aria-label="Play Chinese pronunciation" data-track="play-tts">🔊 Hear name</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how" style="margin:34px 0 20px">
+      <div class="sep"></div>
+      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">How it works</h2>
+      <ol style="padding-left:18px; margin:0; color:#2a2a2a">
+        <li>Enter your English name (optional: birthday or zodiac).</li>
+        <li>We craft Chinese name options by sound, meaning, and heritage.</li>
+        <li>Download a personalized certificate — or order a traditional seal gift box.</li>
+      </ol>
+    </section>
+
+    <!-- CASE STUDIES / STORIES -->
+    <section class="section" id="stories" aria-label="Case studies" style="margin:20px 0 20px">
+      <div class="sep"></div>
+      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">Stories from our users</h2>
+      <div class="stories">
+        <article class="story">
+          <blockquote>“I teach Mandarin in London. My students loved receiving a certificate that explained their names with poetry.”</blockquote>
+          <div class="who">— Alice L., Language Teacher</div>
+        </article>
+        <article class="story">
+          <blockquote>“As a gamer, I wanted a Chinese name for my character. The seal gift box made it feel real and collectible.”</blockquote>
+          <div class="who">— Marco D., Game Designer</div>
+        </article>
+        <article class="story">
+          <blockquote>“I work with clients in Shanghai. Having a culturally grounded name opened conversations instantly.”</blockquote>
+          <div class="who">— Priya S., Consultant</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- COUNTER BAND -->
+    <section class="section band" aria-label="usage counter">
+      <div class="container">
+        <div class="counter">Used by <span id="counter" class="odometer">2,048</span> people — and counting</div>
+      </div>
+    </section>
+
+    <!-- PRICING / OFFER -->
+    <section class="section" id="pricing" style="margin:20px 0 60px">
+      <div class="sep"></div>
+      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">Own your identity</h2>
+      <p style="margin-top:0; color:#2a2a2a">Start free. Upgrade anytime.</p>
+      <div class="pricing">
+        <div class="feature">
+          <h3>Digital Certificate</h3>
+          <p>Printable PDF with meanings, pinyin, and cultural notes. Designed for sharing and keepsake.</p>
+          <a class="btn btn-primary" href="#start">Try Free →</a>
+        </div>
+        <div class="feature">
+          <h3>Seal Gift Box — Wood</h3>
+          <p>Traditional wooden name seal with your Chinese name. Includes an origin card describing the meaning and sound.</p>
+          <a class="btn btn-ghost" href="#start">Preview →</a>
+        </div>
+        <div class="feature">
+          <h3>Seal Gift Box — Horn</h3>
+          <p>Premium horn seal engraved with your name <em>and</em> a classical source of the name on the seal body (e.g., 《詩經》, 《楚辭》). A piece to cherish.</p>
+          <a class="btn btn-ghost" href="#start">Preview →</a>
+        </div>
+      </div>
+    </section>
+    </main>
+
+  <!-- Sticky bottom CTA -->
+  <div id="stickyCTA" class="sticky-cta" role="region" aria-label="sticky actions">
+    <div class="container cta-wrap">
+      <span class="cta-text">Start your Chinese identity journey</span>
+      <a class="btn btn-primary" href="#start" data-track="sticky-discover">Get my Chinese name</a>
+    </div>
+  </div>
+
+  <footer style="border-top:1px solid var(--line); padding:16px 0; background:#fff7">
+    <div class="container" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px">
+      <div style="font-size:13px; color:var(--muted)">© <span id="y"></span> HanName. Crafted in Taiwan, made for the world.</div>
+      <div style="display:flex; gap:10px; font-size:13px">
+        <a href="#how" style="color:inherit">About</a>
+        <a href="#pricing" style="color:inherit">Pricing</a>
+        <a href="mailto:hello@hanname.ai" style="color:inherit">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Fill year
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // Intersection + Scroll logic: only dim sections that are clearly above the viewport
+    const sections = Array.from(document.querySelectorAll('section.section'));
+
+    const revealIO = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, {threshold: 0.15});
+    sections.forEach(s=>revealIO.observe(s));
+
+    const updateDim = () => {
+      const topThreshold = 70; // keep current section fully readable before dimming
+      sections.forEach(s=>{
+        const r = s.getBoundingClientRect();
+        if(r.bottom < topThreshold){
+          s.classList.add('is-dim'); // scrolled past
+        } else if(r.top > window.innerHeight){
+          s.classList.remove('is-dim'); // below viewport, stay vivid when arriving
+        } else {
+          s.classList.remove('is-dim'); // in view
+        }
+      });
+    };
+    window.addEventListener('scroll', updateDim, {passive:true});
+    window.addEventListener('resize', updateDim);
+    updateDim();
+
+    // Usage counter (client-side progressive counter)
+    const COUNTER_KEY = 'hanname_visits_counter_v1';
+    const MIN_INC = 1, MAX_INC = 8, BASE = 2048;
+    const getRand = ()=> Math.floor(Math.random()*(MAX_INC-MIN_INC+1))+MIN_INC;
+    const stored = parseInt(localStorage.getItem(COUNTER_KEY)||'0',10);
+    const current = Math.max(stored || BASE, BASE) + getRand();
+    localStorage.setItem(COUNTER_KEY, String(current));
+    const $counter = document.getElementById('counter');
+    const animateCount = (el, to)=>{
+      const from = parseInt(el.textContent.replace(/[, ]/g,''),10) || BASE;
+      const dur = 600, steps = 24;
+      let frame = 0;
+      const tick = ()=>{
+        frame++;
+        const val = Math.round(from + (to-from)*(frame/steps));
+        el.textContent = val.toLocaleString();
+        if(frame < steps) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    setTimeout(()=>{
+      if($counter) animateCount($counter, current)
+    }, 220);
+
+    // Web Speech API TTS for Chinese pronunciation of the sample name
+    const ttsBtn = document.getElementById('ttsBtn');
+    const speakCN = (text)=>{
+      if(!('speechSynthesis' in window)) return alert('Speech not supported on this browser');
+      const utter = new SpeechSynthesisUtterance(text);
+      const voices = speechSynthesis.getVoices();
+      // Prefer zh-TW or zh-CN voice
+      const v = voices.find(v=>/zh|cmn|Chinese/i.test(v.lang)) || voices[0];
+      if(v) utter.voice = v;
+      utter.lang = v?.lang || 'zh-TW';
+      utter.rate = 0.95; utter.pitch = 1.02;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    };
+    if(ttsBtn){
+      ttsBtn.addEventListener('click', ()=>{
+        track('play_tts', {label:'sample_雅寧'});
+        speakCN('雅寧');
+      });
+    }
+
+    // Tracking helper: works with GA4 if present; falls back to localStorage counts
+    function track(eventName, params={}){
+      try{ if(typeof gtag === 'function') gtag('event', eventName, params);}catch(e){}
+      // local fallback counts
+      try{
+        const k = 'track_'+eventName;
+        const n = parseInt(localStorage.getItem(k)||'0',10)+1;
+        localStorage.setItem(k, String(n));
+        console.log(`[track] ${eventName}`, params, 'count=', n);
+      }catch(e){}
+    }
+    // Auto-bind tracking to elements with [data-track]
+    document.querySelectorAll('[data-track]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const name = el.getAttribute('data-track');
+        const label = el.textContent.trim();
+        track(name, {label});
+      });
+    });
+  </script>
+ <script>
+    // Robust: build query and navigate to result.html (supports <button id="goBtn"> and legacy <a data-track="discover-name">)
+    (function(){
+      const $ = (id)=>document.getElementById(id);
+      const q  = (sel)=>document.querySelector(sel);
+  
+      function go(){
+        const name = $('enName')?.value.trim() || '';
+        if(!name){
+          alert('Please enter your name');
+          $('enName')?.focus();
+          return;
+        }
+        const birth  = $('birth')?.value.trim() || '';
+  
+        // params
+        const qs = new URLSearchParams();
+        qs.set('name', name);
+        if(birth) qs.set('birth', birth); // YYYY-MM-DD
+  
+        // remember last (optional)
+        try{ localStorage.setItem('hn:last', JSON.stringify({name, birth})); }catch(_){}
+  
+        // build a safe relative url even if the site is under a sub-path (e.g., /hanname/)
+        const base = location.pathname.replace(/index\.html?$/i, '');
+        const url  = base + 'result.html?' + qs.toString();
+  
+        location.href = url;
+      }
+  
+      // bind to primary button (preferred)
+      const btn = $('goBtn');
+      if(btn){
+        btn.addEventListener('click', (e)=>{ e.preventDefault(); go(); });
+      }
+  
+      // fallback: bind to legacy anchor if still present
+      const legacy = q('.strip [data-track="discover-name"]');
+      if(!btn && legacy){
+        legacy.addEventListener('click', (e)=>{ e.preventDefault(); go(); });
+      }
+  
+      // Enter key on name input
+      $('enName')?.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter'){ e.preventDefault(); go(); }
+      });
+  
+      // restore last (optional)
+      try{
+        const last = JSON.parse(localStorage.getItem('hn:last') || 'null');
+        if(last){
+          if(last.name)  $('enName').value = last.name;
+          if(last.birth) $('birth').value  = last.birth;
+        }
+      }catch(_){}
+  
+      // tiny self-check to help你除錯（開 F12 可看到）
+      console.debug('[HanName] index.js ready. Button=', !!btn, 'Legacy anchor=', !!legacy);
+    })();
+  </script>
+  
+</body>
+</html>

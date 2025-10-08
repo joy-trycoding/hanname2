@@ -184,7 +184,10 @@
   (async function init(){
     let SURNAME_CATALOG = [];
     try{
-      SURNAME_CATALOG = await fetch('data/surnames.json');
+      // 自動偵測 base path（例如 /hanname2/）
+const base = location.pathname.split('/').slice(0, -1).join('/') || '';
+const dataPath = base + '/data/surnames.json';
+SURNAME_CATALOG = await loadJSON(dataPath);
     }catch(e){
       console.warn('Failed to load surnames.json — fallback to LIN.', e);
       SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];

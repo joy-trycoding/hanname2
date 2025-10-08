@@ -492,6 +492,11 @@ $('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong>${fo
 $('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${formatTpl(ZO_TEMPLATES_EN[templateIndex], ctx)}`;
 $('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${formatTpl(ZO_TEMPLATES_ZH[templateIndex], ctx)}</span>`;
 
+ // === 9) 完成 → 淡出 overlay ===
+ try { clearInterval(floatTimer); } catch(e){}
+  if (overlay) {
+    overlay.classList.add('hide');
+    setTimeout(()=> overlay.remove(), 900); }
     // TTS
     function speak(text){
       const u = new SpeechSynthesisUtterance(text);

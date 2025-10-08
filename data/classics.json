@@ -1,7 +1,3 @@
-const base = location.pathname.split('/').slice(0, -1).join('/');
-const dataPath = base + '/data/surnames.json';
-SURNAME_CATALOG = await loadJSON(dataPath);
-
 [
     {"char":"雅","sourceEn":"Classic of Poetry · Da Ya","sourceZh":"《詩經·大雅》","quoteEn":"Grace and harmony are treasured virtues.","quoteZh":"大雅之音，溫柔敦厚。","meaningEn":"represents elegance and noble temperament","meaningZh":"象徵優雅與高貴氣度"},
     {"char":"寧","sourceEn":"Book of Rites","sourceZh":"《禮記》","quoteEn":"Peace and stability nurture virtue.","quoteZh":"安寧以養德。","meaningEn":"signifies peace and calm disposition","meaningZh":"寓意安寧與靜謐之心"},
@@ -50,7 +46,6 @@ SURNAME_CATALOG = await loadJSON(dataPath);
     {"char":"薇","sourceEn":"Classic of Poetry","sourceZh":"《詩經》","quoteEn":"The wild rose blooms on distant hills.","quoteZh":"采薇采薇。","meaningEn":"represents resilience and elegance","meaningZh":"象徵堅韌與優雅"},
     {"char":"韻","sourceEn":"Book of Odes","sourceZh":"《詩經》","quoteEn":"Harmony and rhythm complete beauty.","quoteZh":"音韻和諧。","meaningEn":"symbolizes rhythm and grace","meaningZh":"寓意風雅與氣質"},
     {"char":"珂","sourceEn":"Tang Poetry","sourceZh":"《唐詩》","quoteEn":"White jade chimes softly in moonlight.","quoteZh":"珂玉鳴佩。","meaningEn":"represents purity and refinement","meaningZh":"象徵潔白與高貴"}
-
             {"char":"卿","sourceEn":"Classic of Poetry · Xiaoya","sourceZh":"《詩經·小雅》","quoteEn":"The noble carry virtue in their hearts.","quoteZh":"卿雲爛兮，糺縵縵兮。","meaningEn":"signifies nobility and virtue","meaningZh":"象徵高貴與仁德"},
             {"char":"賢","sourceEn":"Analects","sourceZh":"《論語》","quoteEn":"To see the virtuous and think to equal them.","quoteZh":"見賢思齊焉。","meaningEn":"represents goodness and self-cultivation","meaningZh":"象徵賢德與修養"},
             {"char":"達","sourceEn":"Mencius","sourceZh":"《孟子》","quoteEn":"When Heaven is about to confer greatness, it first tests the mind.","quoteZh":"天將降大任於是人也。","meaningEn":"symbolizes success and understanding","meaningZh":"寓意通達與堅忍"},
@@ -112,7 +107,6 @@ SURNAME_CATALOG = await loadJSON(dataPath);
             {"char":"蕙","sourceEn":"Book of Songs","sourceZh":"《詩經》","quoteEn":"Orchid fragrance fills the air.","quoteZh":"蕙質蘭心。","meaningEn":"symbolizes kindness and refinement","meaningZh":"寓意溫婉與氣質"},
             {"char":"芳","sourceEn":"Book of Songs","sourceZh":"《詩經》","quoteEn":"Fragrance spreads afar.","quoteZh":"芳菲四溢。","meaningEn":"represents virtue and reputation","meaningZh":"象徵芳名遠揚"},
             {"char":"蘭","sourceEn":"Book of Songs","sourceZh":"《詩經》","quoteEn":"The orchid grows in secluded valley.","quoteZh":"幽蘭生前庭。","meaningEn":"symbolizes elegance and humility","meaningZh":"寓意高潔與淡泊"},
-            {"char":"蓓","sourceEn":"Tang Poetry","sourceZh":"《唐詩》","quoteEn":"The budding flower waits for
-          
+            {"char":"蓓","sourceEn":"Tang Poetry","sourceZh":"《唐詩》","quoteEn":"The budding flower waits for   
 [
   

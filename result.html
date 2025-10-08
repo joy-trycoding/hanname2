@@ -7,78 +7,7 @@
   <meta name="description" content="A bilingual, culturally-rich Chinese name certificate with pronunciation, literature sources, five-element analysis, and zodiac insights." />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Noto+Serif+TC:wght@400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <base href="https://joy-trycoding.github.io/hanname2/">
-<script>
-  async function loadJSON(path){
-    const res = await fetch(path, { cache: 'no-store' });
-    if(!res.ok) throw new Error('Load failed: '+path);
-    return await res.json();
-  }
 
-  // 👇 這裡放：這是 JS，不是 JSON！
-  const base = location.pathname.split('/').slice(0, -1).join('/') || '';
-  const classicsPath = base + '/data/classics.json';
-  const surnamesPath = base + '/data/surnames.json';
-
-  // 之後在 init() 裡呼叫
-  (async function init(){
-    const CLASSIC_BOOK = await loadJSON(classicsPath);
-    const SURNAME_CATALOG = await loadJSON(surnamesPath);
-    console.log('載入成功：', CLASSIC_BOOK.length, SURNAME_CATALOG.length);
-  })();
-</script>
-<script type="module">
-  async function loadJSON(url) {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status} while loading ${url}`);
-    return res.json();
-  }
-  
-  // ✅ 這就是缺少的搜尋函式 findClassic()
-  function findClassic(keyword, classicsData) {
-    if (!keyword || !Array.isArray(classicsData)) return [];
-  
-    const key = keyword.trim().toLowerCase();
-    return classicsData.filter(item => {
-      // 根據你的資料結構調整，例如：item.text, item.title, item.source
-      return (
-        (item.title && item.title.toLowerCase().includes(key)) ||
-        (item.text && item.text.toLowerCase().includes(key)) ||
-        (item.source && item.source.toLowerCase().includes(key))
-      );
-    });
-  }
-  
-  (async function init() {
-    const base = location.pathname.split('/').slice(0, -1).join('/') || '';
-  
-    // 讀姓氏
-    let surnames = [];
-    try {
-      surnames = await loadJSON(base + '/data/surnames.json');
-      console.log('[HanName] surnames loaded:', surnames.length);
-    } catch (err) {
-      console.error('[HanName] Failed to load surnames.json', err);
-      surnames = [];
-    }
-  
-    // 讀典籍
-    let classics = [];
-    try {
-      classics = await loadJSON(base + '/data/classics.json');
-      console.log('[HanName] classics loaded:', classics.length);
-    } catch (err) {
-      console.error('[HanName] Failed to load classics.json', err);
-      classics = [];
-    }
-  
-    // ✅ 測試搜尋：找包含「仁」的條目
-    const results = findClassic('仁', classics);
-    console.log('Classic results:', results);
-  
-    // 你的原本結果頁初始化程式可放這裡
-  })();
-  </script>
-  
   <style>
     :root{ --paper:#F5F1E8; --ink:#1C1B1A; --accent:#C49A6C; --muted:#666; --line:#E5DFD3; }
     *{box-sizing:border-box}
@@ -167,19 +96,29 @@
   </main>
 
   <!-- libs for PDF download (client-side) -->
-  const base = location.pathname.split('/').slice(0, -1).join('/') || '';
-  const dataPath = base + '/data/surnames.json'; // 例：/hanname2/data/surnames.json
-  
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
-  <script>
-  // Keep utilities small & global
+  <!-- Single, clean module script -->
+  <script type="module">
+  // ====== Config & helpers ======
+  const ROOT = "/hanname2"; // 固定專案根路徑，避免動態 base 失準
+  const PATH = {
+    surnames: `${ROOT}/data/surnames.json?v=fix2`,
+    classics: `${ROOT}/data/classics.json?v=fix2`
+  };
+
   const $ = (id)=>document.getElementById(id);
   const pick = (arr, seed)=> arr[Math.abs(seed)%arr.length];
   const hash = (s)=> s.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0) | 0, 0);
 
-  // Five elements by month (demo mapping)
+  async function loadJSON(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status} while loading ${url}`);
+    return res.json();
+  }
+
+  // Five elements (demo)
   const MONTH_TO_ELEMENT = {1:'Water',2:'Wood',3:'Wood',4:'Wood',5:'Fire',6:'Fire',7:'Fire',8:'Earth',9:'Metal',10:'Metal',11:'Water',12:'Water'};
   const ELEMENT_ZH = {Wood:'木', Fire:'火', Earth:'土', Metal:'金', Water:'水'};
 
@@ -203,88 +142,70 @@
     Aquarius:{cn:'水瓶', cnStar:'危宿（示例）', traitEn:'original and humane', traitZh:'創新博愛'}
   };
 
-  // Given-name pool (demo)
-  const NAME_POOL = {
-    Wood:{
-      female:[
-        {cn:'清雲',py:'Qīngyún', classicChar:'雲', classicSourceEn:'Wang Wei, Tang poetry', classicSourceZh:'王維·唐詩', quoteZh:'雲無心以出岫', quoteEn:'Clouds go freely over hills', meaningEn:'clarity and freedom', meaningZh:'清澈自由'},
-        {cn:'雅寧',py:'Yǎníng', classicChar:'雅', classicSourceEn:'Shijing · Da Ya (title uses 雅)', classicSourceZh:'《詩經·大雅》', quoteZh:'大雅', quoteEn:'Da Ya', meaningEn:'elegance & serenity', meaningZh:'優雅與安寧'}
-      ],
-      male:[
-        {cn:'博遠',py:'Bóyuǎn', classicChar:'遠', classicSourceEn:'Qu Yuan · Lisao imagery', classicSourceZh:'屈原·離騷意象', quoteZh:'路漫漫其修遠兮', quoteEn:'The road ahead is long and far', meaningEn:'breadth and vision', meaningZh:'胸襟與宏遠'}
-      ]
-    },
-    Fire:{
-      female:[
-        {cn:'曉恩',py:'Xiǎoēn', classicChar:'曉', classicSourceEn:'Song Ci imagery', classicSourceZh:'宋詞意象', quoteZh:'曉風殘月', quoteEn:'Dawn breeze and waning moon', meaningEn:'gentle warmth', meaningZh:'溫柔晨光'}
-      ],
-      male:[
-        {cn:'文軒',py:'Wénxuān', classicChar:'文', classicSourceEn:'Analects', classicSourceZh:'《論語》', quoteZh:'學而不厭', quoteEn:'Be never weary of learning', meaningEn:'cultured and bright', meaningZh:'文雅明朗'}
-      ]
-    },
-    Earth:{
-      female:[
-        {cn:'靜瑤',py:'Jìngyáo', classicChar:'瑤', classicSourceEn:'Tang poetry', classicSourceZh:'唐詩', quoteZh:'瑤台月下', quoteEn:'Under moonlight at Jade Terrace', meaningEn:'quiet radiance', meaningZh:'靜中生光'}
-      ],
-      male:[
-        {cn:'志宏',py:'Zhìhóng', classicChar:'志', classicSourceEn:'Mencius', classicSourceZh:'《孟子》', quoteZh:'志於道，據於德', quoteEn:'Set your will on the Way', meaningEn:'great aspiration', meaningZh:'宏遠之志'}
-      ]
-    },
-    Metal:{
-      female:[
-        {cn:'景言',py:'Jǐngyán', classicChar:'言', classicSourceEn:'Analects', classicSourceZh:'《論語》', quoteZh:'言為心聲', quoteEn:'Words are the voice of the heart', meaningEn:'clear expression', meaningZh:'清朗之言'}
-      ],
-      male:[
-        {cn:'宇辰',py:'Yǔchén', classicChar:'辰', classicSourceEn:'Song Ci', classicSourceZh:'宋詞', quoteZh:'良辰美景', quoteEn:'A fine time and beautiful scene', meaningEn:'cosmic poise', meaningZh:'宇量與時辰'}
-      ]
-    },
-    Water:{
-      female:[
-        {cn:'心如',py:'Xīnrú', classicChar:'心', classicSourceEn:'Literary aphorism', classicSourceZh:'文人語', quoteZh:'一心如水', quoteEn:'Let the heart be like water', meaningEn:'pure-hearted', meaningZh:'心澄如水'}
-      ],
-      male:[
-        {cn:'清柏',py:'Qīngbǎi', classicChar:'柏', classicSourceEn:'Analects', classicSourceZh:'《論語》', quoteZh:'歲寒，然後知松柏之後凋也', quoteEn:'In winter, we see pine and cypress endure', meaningEn:'clarity & integrity', meaningZh:'清正與節操'}
-      ]
-    }
+  // Given-name pool (demo) — 原樣保留
+  const NAME_POOL = { /* 省略：使用你現有的 NAME_POOL 內容（同你檔案） */ 
+    Wood:{female:[{cn:'清雲',py:'Qīngyún',classicChar:'雲',classicSourceEn:'Wang Wei, Tang poetry',classicSourceZh:'王維·唐詩',quoteZh:'雲無心以出岫',quoteEn:'Clouds go freely over hills',meaningEn:'clarity and freedom',meaningZh:'清澈自由'},{cn:'雅寧',py:'Yǎníng',classicChar:'雅',classicSourceEn:'Shijing · Da Ya (title uses 雅)',classicSourceZh:'《詩經·大雅》',quoteZh:'大雅',quoteEn:'Da Ya',meaningEn:'elegance & serenity',meaningZh:'優雅與安寧'}],male:[{cn:'博遠',py:'Bóyuǎn',classicChar:'遠',classicSourceEn:'Qu Yuan · Lisao imagery',classicSourceZh:'屈原·離騷意象',quoteZh:'路漫漫其修遠兮',quoteEn:'The road ahead is long and far',meaningEn:'breadth and vision',meaningZh:'胸襟與宏遠'}]},
+    Fire:{female:[{cn:'曉恩',py:'Xiǎoēn',classicChar:'曉',classicSourceEn:'Song Ci imagery',classicSourceZh:'宋詞意象',quoteZh:'曉風殘月',quoteEn:'Dawn breeze and waning moon',meaningEn:'gentle warmth',meaningZh:'溫柔晨光'}],male:[{cn:'文軒',py:'Wénxuān',classicChar:'文',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'學而不厭',quoteEn:'Be never weary of learning',meaningEn:'cultured and bright',meaningZh:'文雅明朗'}]},
+    Earth:{female:[{cn:'靜瑤',py:'Jìngyáo',classicChar:'瑤',classicSourceEn:'Tang poetry',classicSourceZh:'唐詩',quoteZh:'瑤台月下',quoteEn:'Under moonlight at Jade Terrace',meaningEn:'quiet radiance',meaningZh:'靜中生光'}],male:[{cn:'志宏',py:'Zhìhóng',classicChar:'志',classicSourceEn:'Mencius',classicSourceZh:'《孟子》',quoteZh:'志於道，據於德',quoteEn:'Set your will on the Way',meaningEn:'great aspiration',meaningZh:'宏遠之志'}]},
+    Metal:{female:[{cn:'景言',py:'Jǐngyán',classicChar:'言',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'言為心聲',quoteEn:'Words are the voice of the heart',meaningEn:'clear expression',meaningZh:'清朗之言'}],male:[{cn:'宇辰',py:'Yǔchén',classicChar:'辰',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteZh:'良辰美景',quoteEn:'A fine time and beautiful scene',meaningEn:'cosmic poise',meaningZh:'宇量與時辰'}]},
+    Water:{female:[{cn:'心如',py:'Xīnrú',classicChar:'心',classicSourceEn:'Literary aphorism',classicSourceZh:'文人語',quoteZh:'一心如水',quoteEn:'Let the heart be like water',meaningEn:'pure-hearted',meaningZh:'心澄如水'}],male:[{cn:'清柏',py:'Qīngbǎi',classicChar:'柏',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'歲寒，然後知松柏之後凋也',quoteEn:'In winter, we see pine and cypress endure',meaningEn:'clarity & integrity',meaningZh:'清正與節操'}]}
   };
 
-  // Main async init — load external data first, then render
+  // ====== App init ======
   (async function init(){
+    // Load data
     let SURNAME_CATALOG = [];
     try{
-      // 自動偵測 base path（例如 /hanname2/）
-const base = location.pathname.split('/').slice(0, -1).join('/') || '';
-const dataPath = base + '/data/surnames.json';
-SURNAME_CATALOG = await loadJSON(dataPath);
-// === Load classic references (典籍資料庫) ===
-let CLASSICS = [];
-try {
-  const classicsPath = base + '/data/classics.json';
-  CLASSICS = await loadJSON(classicsPath);
-  console.log('[HanName] classics.json loaded:', CLASSICS.length, 'entries');
-} catch(e) {
-  console.warn('Failed to load classics.json', e);
-}
-
-// 以名字中使用的單字（classicChar）去尋找典籍對應
-function findClassic(char){
-  if (!char || !CLASSICS.length) return {};
-  return CLASSICS.find(c => c.char === char) || {};
-}
-
+      SURNAME_CATALOG = await loadJSON(PATH.surnames);
+      console.log('[HanName] surnames.json loaded:', SURNAME_CATALOG.length);
     }catch(e){
       console.warn('Failed to load surnames.json — fallback to LIN.', e);
       SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];
     }
 
+    let CLASSICS = [];
+    try{
+      CLASSICS = await loadJSON(PATH.classics);
+      console.log('[HanName] classics.json loaded:', CLASSICS.length);
+    }catch(e){
+      console.warn('Failed to load classics.json', e);
+      CLASSICS = [];
+    }
+
+    // Classic lookup by single character in given name
+    function findClassic(char){
+      if (!char || !CLASSICS.length) return {};
+      // 依你的 classics.json 結構調整：此處假設每筆含 { char, sourceEn, sourceZh, quoteEn, quoteZh }
+      return CLASSICS.find(c => c.char === char) || {};
+    }
+
+    // Parse query
+    const qs = new URLSearchParams(location.search);
+    let enName = (qs.get('name') || '').trim();
+    const gender = (qs.get('gender')||'').toLowerCase();
+    const birth = qs.get('birth') || '';
+
+    // Demo fallback
+    const DEMO = [
+      {en:'Emily Smith', gender:'female', birth:'1994-03-02'},
+      {en:'Daniel Lee', gender:'male', birth:'1992-07-15'},
+      {en:'Sophia Chen', gender:'female', birth:'1996-06-28'}
+    ];
+    if(!enName){
+      const demo = DEMO[Math.abs(hash(Date.now().toString()))%DEMO.length];
+      enName = demo.en;
+      if(!qs.get('gender')) qs.set('gender', demo.gender);
+      if(!qs.get('birth')) qs.set('birth', demo.birth);
+    }
+
+    // Map English surname -> Chinese surname
     function mapEnglishToSurname(last){
       const key = (last||'').toLowerCase().replace(/[^a-z]/g,'');
       if(!key) return SURNAME_CATALOG.find(s=>s.cn==='林') || SURNAME_CATALOG[0];
-      // 1) direct alias hit
       for(const s of SURNAME_CATALOG) {
         if(s.aliases && s.aliases.map(a=>a.toLowerCase()).includes(key)) return s;
       }
-      // 2) similarity: first letter + vowel contour
+      // fuzzy
       const iv = key[0] + key.replace(/[bcdfghjklmnpqrstvwxyz]/g,'');
       let best=null, score=-1;
       for(const s of SURNAME_CATALOG){
@@ -297,35 +218,21 @@ function findClassic(char){
       return best || SURNAME_CATALOG[0];
     }
 
-    // ---------- Build result ----------
-    const qs = new URLSearchParams(location.search);
-    let enName = (qs.get('name') || '').trim();
-    const gender = (qs.get('gender')||'').toLowerCase();
-    const birth = qs.get('birth') || '';
-
-    // if no params, pick a demo record by hash
-    const DEMO = [
-      {en:'Emily Smith', gender:'female', birth:'1994-03-02'},
-      {en:'Daniel Lee', gender:'male', birth:'1992-07-15'},
-      {en:'Sophia Chen', gender:'female', birth:'1996-06-28'}
-    ];
-    if(!enName){ const demo = DEMO[Math.abs(hash(Date.now().toString()))%DEMO.length]; enName = demo.en; if(!qs.get('gender')) qs.set('gender', demo.gender); if(!qs.get('birth')) qs.set('birth', demo.birth); }
-
     const parts = enName.split(/\s+/);
     const lastEn = (parts[parts.length-1]||'').toLowerCase();
     const s = mapEnglishToSurname(lastEn);
     const cnSurname = s.cn; const pySurname = s.py || '';
 
-    // month/day → five elements
+    // Month/day → Five elements
     let m=1,d=1; if(birth){ const dt=new Date(birth); if(!isNaN(dt)) { m=dt.getMonth()+1; d=dt.getDate(); } }
     const el = MONTH_TO_ELEMENT[m] || 'Wood';
     const elZh = ELEMENT_ZH[el] || '木';
 
-    // zodiac
+    // Zodiac
     const z = zodiac(m,d) || 'Pisces';
     const zInfo = ZODIAC_CN_MAP[z] || ZODIAC_CN_MAP['Pisces'];
 
-    // pick given name by element & gender
+    // Pick given name by element & gender
     const pool = NAME_POOL[el] || NAME_POOL.Wood;
     const isFemale = (gender||'female').startsWith('f');
     const list = isFemale ? pool.female : pool.male;
@@ -333,8 +240,7 @@ function findClassic(char){
     const pickName = pick(list, seed);
 
     const cnGiven = pickName.cn;
-    const pyGiven  = pickName.py; // already proper unicode
-
+    const pyGiven  = pickName.py;
     const cnFull = cnSurname + cnGiven;
     const pyFull = `${pySurname} ${pyGiven}`.trim();
 
@@ -344,46 +250,37 @@ function findClassic(char){
     $('pinyinFull').textContent = pyFull;
     $('tagline').innerHTML = `Your exclusive Chinese name is <span class="em zh">${cnFull}</span>. Meaning: <span class="em">${pickName.meaningEn}</span>｜你的中文名字是「<span class="em zh">${cnFull}</span>」，意涵：<span class="em zh">${pickName.meaningZh}</span>`;
 
-    const sPy = s.py || '';
-    const sEra = s.era || ''; const sZhEra = s.zhEra || '';
-    const sNoteEn = s.noteEn || ''; const sNoteZh = s.noteZh || '';
-    const sFEn = s.famousEn || ''; const sFZh = s.famousZh || '';
-
-    $('surnameLine').textContent = `${cnSurname} (${sPy}) — ${sNoteEn}`;
+    const sNoteEn = s.noteEn || ''; const sEra = s.era || ''; const sFEn = s.famousEn || '';
+    $('surnameLine').textContent = `${cnSurname} (${pySurname}) — ${sNoteEn}`;
     $('surnameOrigin').innerHTML = `<strong>Origin:</strong> ${sEra} dynasty; famous figure: ${sFEn}`;
-    
     $('givenLine').textContent = `${cnGiven} (${pickName.py}) — ${pickName.meaningEn}`;
 
-    // Classic source (bilingual, with quote)
-    const classic = findClassic(pickName.classicChar);
+    // Classic source
+    const classic = findClassic(cnGiven.charAt( pickName.classicChar ? cnGiven.indexOf(pickName.classicChar) : 0 )) || {};
+    $('classicEn').innerHTML =
+      `<strong>Classic Source:</strong> The character “${pickName.classicChar || cnGiven.charAt(0)}” in <em>${classic.sourceEn || pickName.classicSourceEn || ''}</em> — “${classic.quoteEn || pickName.quoteEn || ''}”.`;
+    $('classicZh').innerHTML =
+      `<span class="zh"><strong>典籍出處：</strong>${classic.sourceZh || pickName.classicSourceZh || ''}——「${classic.quoteZh || pickName.quoteZh || ''}」。</span>`;
 
-$('classicEn').innerHTML =
-  `<strong>Classic Source:</strong> The character “${pickName.classicChar}” in <em>${classic.sourceEn || pickName.classicSourceEn}</em> — “${classic.quoteEn || pickName.quoteEn}”.`;
-
-$('classicZh').innerHTML =
-  `<span class="zh"><strong>典籍出處：</strong>${classic.sourceZh || pickName.classicSourceZh}——「${classic.quoteZh || pickName.quoteZh}」。</span>`;
-
-    // Five elements analysis
+    // Five elements & Zodiac
     $('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> Born in month ${m}, your chart leans to <strong>${el}</strong> (${elZh}). We reinforce balance using the second character “${cnGiven.charAt(1) || cnGiven.charAt(0)}”.`;
-$('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong> 生於${m}月偏<strong>${elZh}</strong>，以名字的第二字「${cnGiven.charAt(1) || cnGiven.charAt(0)}」補足氣象，趨於中和。</span>`;
-
-    // Zodiac analysis
+    $('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong> 生於${m}月偏<strong>${elZh}</strong>，以名字的第二字「${cnGiven.charAt(1) || cnGiven.charAt(0)}」補足氣象，趨於中和。</span>`;
     $('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${z} (${zInfo.cn}). We echo its traits by choosing the first character “${cnGiven.charAt(0)}”.`;
-$('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${zInfo.cn}座之性格，對應以名字第一字「${cnGiven.charAt(0)}」作為呼應與定調。</span>`;
+    $('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${zInfo.cn}座之性格，對應以名字第一字「${cnGiven.charAt(0)}」作為呼應與定調。</span>`;
 
-    // TTS (ensure voices loaded once)
+    // TTS
     function speak(text){
       const u = new SpeechSynthesisUtterance(text);
       const v = speechSynthesis.getVoices().find(v=>/zh|cmn|Chinese/i.test(v.lang));
       if(v) u.voice=v; u.lang=v?.lang||'zh-TW'; u.rate=.96; u.pitch=1.04; speechSynthesis.cancel(); speechSynthesis.speak(u);
     }
-    document.getElementById('speak').addEventListener('click', ()=> speak(cnFull));
+    $('speak').addEventListener('click', ()=> speak(cnFull));
     if (speechSynthesis && typeof speechSynthesis.onvoiceschanged !== 'undefined') {
-      speechSynthesis.onvoiceschanged = ()=>{}; // trigger load
+      speechSynthesis.onvoiceschanged = ()=>{};
     }
 
     // Download PDF
-    document.getElementById('download').addEventListener('click', async ()=>{
+    $('download').addEventListener('click', async ()=>{
       const { jsPDF } = window.jspdf;
       const node = document.querySelector('#cert');
       const canvas = await html2canvas(node, {scale:2});
@@ -396,7 +293,7 @@ $('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${zInfo.cn
     });
 
     // Share
-    document.getElementById('share').addEventListener('click', async ()=>{
+    $('share').addEventListener('click', async ()=>{
       const url = location.href;
       const text = `My Chinese name on HanName: ${cnFull} (${pyFull}).`;
       if(navigator.share){ try{ await navigator.share({title:'HanName Certificate', text, url}); }catch(e){} }
@@ -406,3 +303,4 @@ $('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${zInfo.cn
   </script>
 </body>
 </html>
+

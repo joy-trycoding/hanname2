@@ -202,6 +202,22 @@
 const base = location.pathname.split('/').slice(0, -1).join('/') || '';
 const dataPath = base + '/data/surnames.json';
 SURNAME_CATALOG = await loadJSON(dataPath);
+// === Load classic references (典籍資料庫) ===
+let CLASSICS = [];
+try {
+  const classicsPath = base + '/data/classics.json';
+  CLASSICS = await loadJSON(classicsPath);
+  console.log('[HanName] classics.json loaded:', CLASSICS.length, 'entries');
+} catch(e) {
+  console.warn('Failed to load classics.json', e);
+}
+
+// 以名字中使用的單字（classicChar）去尋找典籍對應
+function findClassic(char){
+  if (!char || !CLASSICS.length) return {};
+  return CLASSICS.find(c => c.char === char) || {};
+}
+
     }catch(e){
       console.warn('Failed to load surnames.json — fallback to LIN.', e);
       SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];
@@ -285,8 +301,13 @@ SURNAME_CATALOG = await loadJSON(dataPath);
     $('givenLine').textContent = `${cnGiven} (${pickName.py}) — ${pickName.meaningEn}`;
 
     // Classic source (bilingual, with quote)
-    $('classicEn').innerHTML = `<strong>Classic Source:</strong> The character “${pickName.classicChar}” in <em>${pickName.classicSourceEn}</em> — “${pickName.quoteEn}”.`;
-$('classicZh').innerHTML = `<span class="zh"><strong>典籍出處：</strong> 名字中的「${pickName.classicChar}」取自${pickName.classicSourceZh}——「${pickName.quoteZh}」。</span>`;
+    const classic = findClassic(pickName.classicChar);
+
+$('classicEn').innerHTML =
+  `<strong>Classic Source:</strong> The character “${pickName.classicChar}” in <em>${classic.sourceEn || pickName.classicSourceEn}</em> — “${classic.quoteEn || pickName.quoteEn}”.`;
+
+$('classicZh').innerHTML =
+  `<span class="zh"><strong>典籍出處：</strong>${classic.sourceZh || pickName.classicSourceZh}——「${classic.quoteZh || pickName.quoteZh}」。</span>`;
 
     // Five elements analysis
     $('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> Born in month ${m}, your chart leans to <strong>${el}</strong> (${elZh}). We reinforce balance using the second character “${cnGiven.charAt(1) || cnGiven.charAt(0)}”.`;

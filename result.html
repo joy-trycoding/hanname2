@@ -136,407 +136,407 @@
     </section>
   </main>
 
-  <!-- libs for PDF download (client-side) -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
-  <!-- Single, clean module script -->
   <script type="module">
-  // ====== Config & helpers ======
-  const ROOT = "/hanname2"; // 固定專案根路徑，避免動態 base 失準
-  const PATH = {
-    surnames: `${ROOT}/data/surnames.json?v=fix2`,
-    classics: `${ROOT}/data/classics.json?v=fix2`
-  };
+  (async function init(){
+    // ====== Config & helpers ======
+    const ROOT = "/hanname2"; // 固定專案根路徑，避免動態 base 失準
+    const PATH = {
+      surnames: `${ROOT}/data/surnames.json?v=fix2`,
+      classics: `${ROOT}/data/classics.json?v=fix2`
+    };
 
-  const $ = (id)=>document.getElementById(id);
-  const pick = (arr, seed)=> arr[Math.abs(seed)%arr.length];
-  const hash = (s)=> s.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0) | 0, 0);
+    const $ = (id)=>document.getElementById(id);
+    const pick = (arr, seed)=> arr[Math.abs(seed)%arr.length];
+    const hash = (s)=> s.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0) | 0, 0);
 
-  async function loadJSON(url) {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status} while loading ${url}`);
-    return res.json();
+    async function loadJSON(url) {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} while loading ${url}`);
+      return res.json();
+    }
+
+    // Five elements (demo)
+    const MONTH_TO_ELEMENT = {1:'Water',2:'Wood',3:'Wood',4:'Wood',5:'Fire',6:'Fire',7:'Fire',8:'Earth',9:'Metal',10:'Metal',11:'Water',12:'Water'};
+    const ELEMENT_ZH = {Wood:'木', Fire:'火', Earth:'土', Metal:'金', Water:'水'};
+
+    // Western zodiac
+    function zodiac(m,d){
+      const z=[['Capricorn',1,19],['Aquarius',2,18],['Pisces',3,20],['Aries',4,19],['Taurus',5,20],['Gemini',6,20],['Cancer',7,22],['Leo',8,22],['Virgo',9,22],['Libra',10,22],['Scorpio',11,21],['Sagittarius',12,21],['Capricorn',12,31]];
+      for(const [name,mm,dd] of z){ if(m<mm || (m===mm && d<=dd)) return name; }
+    }
+    const ZODIAC_CN_MAP = {
+      Pisces:{cn:'雙魚', cnStar:'奎宿（示例）', traitEn:'sensitive and insightful', traitZh:'感性而具洞察力'},
+      Aries:{cn:'牡羊', cnStar:'角宿（示例）', traitEn:'decisive and pioneering', traitZh:'果敢開創'},
+      Taurus:{cn:'金牛', cnStar:'昴宿（示例）', traitEn:'grounded and persevering', traitZh:'踏實堅定'},
+      Gemini:{cn:'雙子', cnStar:'軫宿（示例）', traitEn:'curious and expressive', traitZh:'好奇善言'},
+      Cancer:{cn:'巨蟹', cnStar:'房宿（示例）', traitEn:'nurturing and protective', traitZh:'關懷守護'},
+      Leo:{cn:'獅子', cnStar:'心宿（示例）', traitEn:'radiant and confident', traitZh:'自信閃耀'},
+      Virgo:{cn:'處女', cnStar:'女宿（示例）', traitEn:'refined and meticulous', traitZh:'細膩講究'},
+      Libra:{cn:'天秤', cnStar:'衡宿（示例）', traitEn:'balanced and graceful', traitZh:'平衡優雅'},
+      Scorpio:{cn:'天蠍', cnStar:'尾宿（示例）', traitEn:'deep and resolute', traitZh:'深沉果決'},
+      Sagittarius:{cn:'射手', cnStar:'箕宿（示例）', traitEn:'far-sighted and free', traitZh:'遠志自由'},
+      Capricorn:{cn:'摩羯', cnStar:'牛宿（示例）', traitEn:'enduring and disciplined', traitZh:'韌性自律'},
+      Aquarius:{cn:'水瓶', cnStar:'危宿（示例）', traitEn:'original and humane', traitZh:'創新博愛'}
+    };
+
+    // Given-name pool (demo) — 原樣保留
+    const NAME_POOL = { /* 省略：使用你現有的 NAME_POOL 內容（同你檔案） */
+      Wood:{female:[{cn:'清雲',py:'Qīngyún',classicChar:'雲',classicSourceEn:'Wang Wei, Tang poetry',classicSourceZh:'王維·唐詩',quoteZh:'雲無心以出岫',quoteEn:'Clouds go freely over hills',meaningEn:'clarity and freedom',meaningZh:'清澈自由'},{cn:'雅寧',py:'Yǎníng',classicChar:'雅',classicSourceEn:'Shijing · Da Ya (title uses 雅)',classicSourceZh:'《詩經·大雅》',quoteZh:'大雅',quoteEn:'Da Ya',meaningEn:'elegance & serenity',meaningZh:'優雅與安寧'}],male:[{cn:'博遠',py:'Bóyuǎn',classicChar:'遠',classicSourceEn:'Qu Yuan · Lisao imagery',classicSourceZh:'屈原·離騷意象',quoteZh:'路漫漫其修遠兮',quoteEn:'The road ahead is long and far',meaningEn:'breadth and vision',meaningZh:'胸襟與宏遠'}]},
+      Fire:{female:[{cn:'曉恩',py:'Xiǎoēn',classicChar:'曉',classicSourceEn:'Song Ci imagery',classicSourceZh:'宋詞意象',quoteZh:'曉風殘月',quoteEn:'Dawn breeze and waning moon',meaningEn:'gentle warmth',meaningZh:'溫柔晨光'}],male:[{cn:'文軒',py:'Wénxuān',classicChar:'文',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'學而不厭',quoteEn:'Be never weary of learning',meaningEn:'cultured and bright',meaningZh:'文雅明朗'}]},
+      Earth:{female:[{cn:'靜瑤',py:'Jìngyáo',classicChar:'瑤',classicSourceEn:'Tang poetry',classicSourceZh:'唐詩',quoteZh:'瑤台月下',quoteEn:'Under moonlight at Jade Terrace',meaningEn:'quiet radiance',meaningZh:'靜中生光'}],male:[{cn:'志宏',py:'Zhìhóng',classicChar:'志',classicSourceEn:'Mencius',classicSourceZh:'《孟子》',quoteZh:'志於道，據於德',quoteEn:'Set your will on the Way',meaningEn:'great aspiration',meaningZh:'宏遠之志'}]},
+      Metal:{female:[{cn:'景言',py:'Jǐngyán',classicChar:'言',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'言為心聲',quoteEn:'Words are the voice of the heart',meaningEn:'clear expression',meaningZh:'清朗之言'}],male:[{cn:'宇辰',py:'Yǔchén',classicChar:'辰',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteZh:'良辰美景',quoteEn:'A fine time and beautiful scene',meaningEn:'cosmic poise',meaningZh:'宇量與時辰'}]},
+      Water:{female:[{cn:'心如',py:'Xīnrú',classicChar:'心',classicSourceEn:'Literary aphorism',classicSourceZh:'文人語',quoteZh:'一心如水',quoteEn:'Let the heart be like water',meaningEn:'pure-hearted',meaningZh:'心澄如水'}],male:[{cn:'清柏',py:'Qīngbǎi',classicChar:'柏',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'歲寒，然後知松柏之後凋也',quoteEn:'In winter, we see pine and cypress endure',meaningEn:'clarity & integrity',meaningZh:'清正與節操'}]}
+    };
+
+   // ====== App init ======
+
+  // === Loading overlay：先顯示動畫 ===
+  const overlay = document.getElementById('loadingOverlay');
+  const floatBox = document.getElementById('floatingZh');
+
+  function spawnFloatingZh(){
+    if (!floatBox) return;
+    floatBox.innerHTML = '';
+    const words = ['你的名字','正在','設計中','優雅','平衡','靈感','文化','典雅','詩意','和鳴'];
+    const W = window.innerWidth, H = window.innerHeight;
+    const N = 16;
+    for(let i=0;i<N;i++){
+      const span = document.createElement('span');
+      span.textContent = words[i % words.length];
+      const x = Math.random() * (W - 80);
+      const y = Math.random() * (H - 40);
+      const delay = (Math.random() * 2).toFixed(2);
+      const dur = (5 + Math.random() * 4).toFixed(2);
+      span.style.left = `${x}px`;
+      span.style.top  = `${y}px`;
+      span.style.animationDuration = `${dur}s`;
+      span.style.animationDelay = `${delay}s`;
+      floatBox.appendChild(span);
+    }
+  }
+  spawnFloatingZh();
+  const floatTimer = setInterval(spawnFloatingZh, 2800);
+
+  // === 1) 解析 Query ===
+  const qs = new URLSearchParams(location.search);
+  let enName = (qs.get('name') || '').trim();
+  let gender = (qs.get('gender') || '').toLowerCase();
+  const birth = qs.get('birth') || '';
+
+  const DEMO = [
+    {en:'Emily Smith', gender:'female', birth:'1994-03-02'},
+    {en:'Daniel Lee', gender:'male',   birth:'1992-07-15'},
+    {en:'Sophia Chen', gender:'female',birth:'1996-06-28'}
+  ];
+  if(!enName){
+    const demo = DEMO[Math.floor(Math.random()*DEMO.length)];
+    enName = demo.en;
+    if(!qs.get('gender')) gender = demo.gender;
+    if(!qs.get('birth')) {
+      // 以 demo 值刷新網址，之後流程一致
+      location.search = `?name=${encodeURIComponent(enName)}&gender=${demo.gender}&birth=${demo.birth}`;
+      return; // 等頁面重新載入
+    }
   }
 
-  // Five elements (demo)
-  const MONTH_TO_ELEMENT = {1:'Water',2:'Wood',3:'Wood',4:'Wood',5:'Fire',6:'Fire',7:'Fire',8:'Earth',9:'Metal',10:'Metal',11:'Water',12:'Water'};
-  const ELEMENT_ZH = {Wood:'木', Fire:'火', Earth:'土', Metal:'金', Water:'水'};
+  // 英文姓（最後一段字）
+  const parts = enName.split(/\s+/).filter(Boolean);
+  const lastEn = (parts.length > 1 ? parts.at(-1) : parts[0] || '').toLowerCase();
 
-  // Western zodiac
-  function zodiac(m,d){
+  // === 2) 載入資料 ===
+  let SURNAME_CATALOG = [];
+  let CLASSICS = [];
+  let GIVENS = [];
+
+  try{
+    SURNAME_CATALOG = await loadJSON(PATH.surnames);
+    console.log('[HanName] surnames.json loaded:', SURNAME_CATALOG.length);
+  }catch(e){
+    console.warn('Failed to load surnames.json — fallback to LIN.', e);
+    SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];
+  }
+
+  if (PATH.classics){
+    try{
+      CLASSICS = await loadJSON(PATH.classics);
+      console.log('[HanName] classics.json loaded:', CLASSICS.length);
+    }catch(e){
+      console.warn('Failed to load classics.json', e);
+      CLASSICS = [];
+    }
+  }
+
+  if (PATH.givens){
+    try{
+      GIVENS = await loadJSON(PATH.givens);
+      console.log('[HanName] givenNameData.json loaded:', GIVENS.length);
+    }catch(e){
+      console.warn('Failed to load givenNameData.json', e);
+      GIVENS = [];
+    }
+  }
+
+  // === 3) 姓氏映射 ===
+  function mapEnglishToSurname(last){
+    const key = (last||'').toLowerCase().replace(/[^a-z]/g,'');
+    if(!key) return SURNAME_CATALOG.find(s=>s.cn==='林') || SURNAME_CATALOG[0];
+    for(const s of SURNAME_CATALOG) {
+      if(s.aliases && s.aliases.map(a=>a.toLowerCase()).includes(key)) return s;
+    }
+    // fuzzy（簡易）
+    const iv = key[0] + key.replace(/[bcdfghjklmnpqrstvwxyz]/g,'');
+    let best=null, score=-1;
+    for(const s of SURNAME_CATALOG){
+      const a = (s.aliases && s.aliases[0]) || ((s.py||'')+"").toLowerCase();
+      if(!a) continue;
+      const iv2 = a[0] + a.replace(/[^aeiou]/g,'');
+      let sc = 0; if(a[0]===key[0]) sc+=2; if(iv===iv2) sc+=2; if(a.includes(key.slice(0,2))) sc+=1;
+      if(sc>score){score=sc; best=s;}
+    }
+    return best || SURNAME_CATALOG[0];
+  }
+  const s = mapEnglishToSurname(lastEn);
+  const cnSurname = s.cn;
+  const pySurname = s.py || '';
+
+  // === 4) 五行 & 星座 ===
+  let m=1,d=1;
+  if(birth){
+    const dt=new Date(birth);
+    if(!isNaN(dt)) { m=dt.getMonth()+1; d=dt.getDate(); }
+  }
+  const el = MONTH_TO_ELEMENT[m] || 'Wood';
+  const elZh = ELEMENT_ZH[el] || '木';
+
+  function zodiac(mm,dd){
     const z=[['Capricorn',1,19],['Aquarius',2,18],['Pisces',3,20],['Aries',4,19],['Taurus',5,20],['Gemini',6,20],['Cancer',7,22],['Leo',8,22],['Virgo',9,22],['Libra',10,22],['Scorpio',11,21],['Sagittarius',12,21],['Capricorn',12,31]];
-    for(const [name,mm,dd] of z){ if(m<mm || (m===mm && d<=dd)) return name; }
+    for(const [name,MM,DD] of z){ if(mm<MM || (mm===MM && dd<=DD)) return name; }
   }
-  const ZODIAC_CN_MAP = {
-    Pisces:{cn:'雙魚', cnStar:'奎宿（示例）', traitEn:'sensitive and insightful', traitZh:'感性而具洞察力'},
-    Aries:{cn:'牡羊', cnStar:'角宿（示例）', traitEn:'decisive and pioneering', traitZh:'果敢開創'},
-    Taurus:{cn:'金牛', cnStar:'昴宿（示例）', traitEn:'grounded and persevering', traitZh:'踏實堅定'},
-    Gemini:{cn:'雙子', cnStar:'軫宿（示例）', traitEn:'curious and expressive', traitZh:'好奇善言'},
-    Cancer:{cn:'巨蟹', cnStar:'房宿（示例）', traitEn:'nurturing and protective', traitZh:'關懷守護'},
-    Leo:{cn:'獅子', cnStar:'心宿（示例）', traitEn:'radiant and confident', traitZh:'自信閃耀'},
-    Virgo:{cn:'處女', cnStar:'女宿（示例）', traitEn:'refined and meticulous', traitZh:'細膩講究'},
-    Libra:{cn:'天秤', cnStar:'衡宿（示例）', traitEn:'balanced and graceful', traitZh:'平衡優雅'},
-    Scorpio:{cn:'天蠍', cnStar:'尾宿（示例）', traitEn:'deep and resolute', traitZh:'深沉果決'},
-    Sagittarius:{cn:'射手', cnStar:'箕宿（示例）', traitEn:'far-sighted and free', traitZh:'遠志自由'},
-    Capricorn:{cn:'摩羯', cnStar:'牛宿（示例）', traitEn:'enduring and disciplined', traitZh:'韌性自律'},
-    Aquarius:{cn:'水瓶', cnStar:'危宿（示例）', traitEn:'original and humane', traitZh:'創新博愛'}
+  const z = zodiac(m,d) || 'Pisces';
+  const zInfo = ZODIAC_CN_MAP[z] || ZODIAC_CN_MAP['Pisces'];
+
+  // === 5) 種子（可重現/隨機）＆ 挑選 Given Name ===
+  const modeRandom = (qs.get('var') || '').toLowerCase() === 'random';   // &var=random 每次都不同
+  const salt = qs.get('salt') || '';                                      // &salt=XYZ 手動切版
+
+  function hash2(s){
+    let h = 2166136261 >>> 0; // FNV-1a
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h | 0;
+  }
+  function makeSeedString(){
+    return [
+      (enName || '').toLowerCase(),
+      (birth  || '').toLowerCase(),
+      (gender || '').toLowerCase(),
+      (lastEn || '').toLowerCase(),
+      (cnSurname || ''),
+      (el || ''),
+      (z || ''),
+      salt
+    ].join('|');
+  }
+  function seededIndex(list, seedStr){
+    if (!list || !list.length) return -1;
+    let seed = hash2(seedStr);
+    if (modeRandom) {
+      const rand = (crypto?.getRandomValues)
+        ? crypto.getRandomValues(new Uint32Array(1))[0]
+        : Math.floor(Math.random() * 0xFFFFFFFF);
+      seed ^= rand;
+    }
+    return Math.abs(seed) % list.length;
+  }
+
+  // 最小備援池（真的抓不到 GIVENS 才會用到）
+  const FALLBACK_POOL = {
+    Wood:{ female:[{cn:'雅寧',py:'Yǎníng',classicChar:'雅',classicSourceEn:'Shijing · Da Ya',classicSourceZh:'《詩經·大雅》',quoteEn:'Da Ya',quoteZh:'大雅',meaningEn:'elegance & serenity',meaningZh:'優雅與安寧'}],
+           male:  [{cn:'博遠',py:'Bóyuǎn',classicChar:'遠',classicSourceEn:'Qu Yuan · Lisao',classicSourceZh:'屈原·離騷',quoteEn:'The road ahead is long',quoteZh:'路漫漫其修遠兮',meaningEn:'breadth and vision',meaningZh:'胸襟與宏遠'}] },
+    Fire:{ female:[{cn:'曉恩',py:'Xiǎoēn',classicChar:'曉',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteEn:'Dawn breeze and waning moon',quoteZh:'曉風殘月',meaningEn:'gentle warmth',meaningZh:'溫柔晨光'}],
+           male:  [{cn:'文軒',py:'Wénxuān',classicChar:'文',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Be never weary of learning',quoteZh:'學而不厭',meaningEn:'cultured and bright',meaningZh:'文雅明朗'}] },
+    Earth:{ female:[{cn:'靜瑤',py:'Jìngyáo',classicChar:'瑤',classicSourceEn:'Tang poetry',classicSourceZh:'唐詩',quoteEn:'Jade terrace under moon',quoteZh:'瑤台月下',meaningEn:'quiet radiance',meaningZh:'靜中生光'}],
+           male:  [{cn:'志宏',py:'Zhìhóng',classicChar:'志',classicSourceEn:'Mencius',classicSourceZh:'《孟子》',quoteEn:'Set your will on the Way',quoteZh:'志於道，據於德',meaningEn:'great aspiration',meaningZh:'宏遠之志'}] },
+    Metal:{ female:[{cn:'景言',py:'Jǐngyán',classicChar:'言',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Words are the voice of the heart',quoteZh:'言為心聲',meaningEn:'clear expression',meaningZh:'清朗之言'}],
+           male:  [{cn:'宇辰',py:'Yǔchén',classicChar:'辰',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteEn:'A fine time and scene',quoteZh:'良辰美景',meaningEn:'cosmic poise',meaningZh:'宇量與時辰'}] },
+    Water:{ female:[{cn:'心如',py:'Xīnrú',classicChar:'心',classicSourceEn:'Aphorism',classicSourceZh:'文人語',quoteEn:'Let the heart be like water',quoteZh:'一心如水',meaningEn:'pure-hearted',meaningZh:'心澄如水'}],
+           male:  [{cn:'清柏',py:'Qīngbǎi',classicChar:'柏',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Pine & cypress endure',quoteZh:'歲寒然後知松柏之後凋也',meaningEn:'clarity & integrity',meaningZh:'清正與節操'}] }
   };
 
-  // Given-name pool (demo) — 原樣保留
-  const NAME_POOL = { /* 省略：使用你現有的 NAME_POOL 內容（同你檔案） */ 
-    Wood:{female:[{cn:'清雲',py:'Qīngyún',classicChar:'雲',classicSourceEn:'Wang Wei, Tang poetry',classicSourceZh:'王維·唐詩',quoteZh:'雲無心以出岫',quoteEn:'Clouds go freely over hills',meaningEn:'clarity and freedom',meaningZh:'清澈自由'},{cn:'雅寧',py:'Yǎníng',classicChar:'雅',classicSourceEn:'Shijing · Da Ya (title uses 雅)',classicSourceZh:'《詩經·大雅》',quoteZh:'大雅',quoteEn:'Da Ya',meaningEn:'elegance & serenity',meaningZh:'優雅與安寧'}],male:[{cn:'博遠',py:'Bóyuǎn',classicChar:'遠',classicSourceEn:'Qu Yuan · Lisao imagery',classicSourceZh:'屈原·離騷意象',quoteZh:'路漫漫其修遠兮',quoteEn:'The road ahead is long and far',meaningEn:'breadth and vision',meaningZh:'胸襟與宏遠'}]},
-    Fire:{female:[{cn:'曉恩',py:'Xiǎoēn',classicChar:'曉',classicSourceEn:'Song Ci imagery',classicSourceZh:'宋詞意象',quoteZh:'曉風殘月',quoteEn:'Dawn breeze and waning moon',meaningEn:'gentle warmth',meaningZh:'溫柔晨光'}],male:[{cn:'文軒',py:'Wénxuān',classicChar:'文',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'學而不厭',quoteEn:'Be never weary of learning',meaningEn:'cultured and bright',meaningZh:'文雅明朗'}]},
-    Earth:{female:[{cn:'靜瑤',py:'Jìngyáo',classicChar:'瑤',classicSourceEn:'Tang poetry',classicSourceZh:'唐詩',quoteZh:'瑤台月下',quoteEn:'Under moonlight at Jade Terrace',meaningEn:'quiet radiance',meaningZh:'靜中生光'}],male:[{cn:'志宏',py:'Zhìhóng',classicChar:'志',classicSourceEn:'Mencius',classicSourceZh:'《孟子》',quoteZh:'志於道，據於德',quoteEn:'Set your will on the Way',meaningEn:'great aspiration',meaningZh:'宏遠之志'}]},
-    Metal:{female:[{cn:'景言',py:'Jǐngyán',classicChar:'言',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'言為心聲',quoteEn:'Words are the voice of the heart',meaningEn:'clear expression',meaningZh:'清朗之言'}],male:[{cn:'宇辰',py:'Yǔchén',classicChar:'辰',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteZh:'良辰美景',quoteEn:'A fine time and beautiful scene',meaningEn:'cosmic poise',meaningZh:'宇量與時辰'}]},
-    Water:{female:[{cn:'心如',py:'Xīnrú',classicChar:'心',classicSourceEn:'Literary aphorism',classicSourceZh:'文人語',quoteZh:'一心如水',quoteEn:'Let the heart be like water',meaningEn:'pure-hearted',meaningZh:'心澄如水'}],male:[{cn:'清柏',py:'Qīngbǎi',classicChar:'柏',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteZh:'歲寒，然後知松柏之後凋也',quoteEn:'In winter, we see pine and cypress endure',meaningEn:'clarity & integrity',meaningZh:'清正與節操'}]}
+  function pickGivenByData(element, gender){
+    const g = (gender || '').toLowerCase().startsWith('f') ? 'female'
+          : (gender || '').toLowerCase().startsWith('m') ? 'male'
+          : '';
+    let cand = GIVENS.filter(x =>
+      (!element || (x.element||'').toLowerCase() === element.toLowerCase()) &&
+      (!g || (x.gender||'').toLowerCase() === g)
+    );
+    if (!cand.length) cand = GIVENS.filter(x => (x.element||'').toLowerCase() === (element||'').toLowerCase());
+    if (!cand.length) cand = GIVENS.slice();
+    if (!cand.length) {
+      const pool = FALLBACK_POOL[element] || FALLBACK_POOL.Wood || { female:[], male:[] };
+      cand = (g==='female' ? (pool.female||[]) : (pool.male||[]));
+    }
+    const idx = seededIndex(cand, makeSeedString());
+    return idx >= 0 ? cand[idx] : null;
+  }
+
+  let chosen = pickGivenByData(el, gender);
+  if (!chosen) {
+    chosen = FALLBACK_POOL.Wood.female[0];
+  }
+
+  const cnGiven = chosen.cn;
+  const pyGiven  = chosen.py;
+  const cnFull = cnSurname + cnGiven;
+  const pyFull = `${pySurname} ${pyGiven}`.trim();
+
+  // === 6) 經典查找（可用 classics.json 補強 chosen 的引用） ===
+  function findClassic(char){
+    if (!char || !CLASSICS.length) return {};
+    return CLASSICS.find(c => c.char === char) || {};
+  }
+  const primaryChar = chosen.classicChar || cnGiven.charAt(0);
+  const classic = findClassic(primaryChar);
+  const sourceEn = classic.sourceEn || chosen.classicSourceEn || '';
+  const sourceZh = classic.sourceZh || chosen.classicSourceZh || '';
+  const quoteEn  = classic.quoteEn  || chosen.quoteEn  || '';
+  const quoteZh  = classic.quoteZh  || chosen.quoteZh  || '';
+
+  // === 7) 五行/星座模板（10組），用種子選版本（可重現或隨機） ===
+  const FE_TEMPLATES_EN = [
+    "Born in month {month}, your nature aligns with {el} ({elZh}), symbolizing renewal and vitality. The second character “{secondChar}” strengthens inner balance and brings harmony to your temperament.",
+    "The energy of {el} ({elZh}) dominates your birth month, granting creativity and growth. By using “{secondChar}”, your name softens excess vigor and guides it toward stability.",
+    "April’s {el} element flows through you, evoking vitality and empathy. The character “{secondChar}” nurtures this flow, creating calm strength and steady purpose.",
+    "The essence of {elZh} in your chart emphasizes compassion and growth. “{secondChar}” anchors these qualities, bringing balance between idealism and action.",
+    "Your elemental path of {el} lends flexibility and intuition. The name’s latter part “{secondChar}” acts as a steadying root, harmonizing your emotions.",
+    "With {elZh} predominant, you possess natural empathy and an artistic touch. “{secondChar}” enhances resilience, letting you grow through challenges.",
+    "Born under strong {el} energy, you thrive in connection and learning. “{secondChar}” stabilizes your curiosity, grounding inspiration into real action.",
+    "Month {month} aligns with {elZh}, symbol of harmony and renewal. The second glyph “{secondChar}” enriches emotional balance and steady growth.",
+    "The presence of {el} grants resilience and compassion. “{secondChar}” weaves stability into your bright personality, balancing heart and reason.",
+    "{elZh} rules your birth season, gifting openness and adaptability. “{secondChar}” completes this harmony, allowing you to stay calm amid growth."
+  ];
+  const ZO_TEMPLATES_EN = [
+    "As a {zodiacEn} ({zodiacZh}), you’re bold and passionate — the first character “{firstChar}” channels that fire into refinement and grace.",
+    "{zodiacEn} souls seek adventure; “{firstChar}” mirrors that spirit yet adds poise, helping you express courage with wisdom.",
+    "A true {zodiacEn} is radiant and driven — “{firstChar}” transforms impulse into confident charm, revealing natural leadership.",
+    "Under the sign of {zodiacEn}, the word “{firstChar}” refines your fiery drive into creativity and influence.",
+    "{zodiacEn} hearts blaze with independence — “{firstChar}” channels this flame toward grace and authentic self-expression.",
+    "As a {zodiacEn}, “{firstChar}” celebrates your fearless heart and helps project confidence that inspires others.",
+    "The {zodiacEn} constellation symbolizes courage and renewal — “{firstChar}” magnifies your pioneering light.",
+    "For a spirited {zodiacEn}, “{firstChar}” acts as a talisman of clarity, helping channel passion into purpose.",
+    "A {zodiacEn} thrives on challenge; “{firstChar}” refines your impulsive side, turning courage into charisma.",
+    "{zodiacEn} energy radiates confidence — “{firstChar}” echoes that light, bringing you both elegance and magnetism."
+  ];
+  const FE_TEMPLATES_ZH = [
+    "生於{month}月，命格偏{elZh}，象徵生長與希望。名字第二字「{secondChar}」調和五行，使氣質更為均衡穩定。",
+    "{elZh}之氣主導你的出生月，帶來創造與靈性。「{secondChar}」一字平衡旺盛的生命力，使你兼具柔韌與堅定。",
+    "{month}月的{elZh}之性，賦予你成長與同理心。「{secondChar}」溫潤其間，使能量流動而不躁，內外和諧。",
+    "五行屬{elZh}者，多具包容與進取心。「{secondChar}」使其氣象中庸，讓理想與行動達到平衡。",
+    "命格中{elZh}旺盛，靈氣流動，「{secondChar}」如根般穩定，讓情感與理智共生。",
+    "{elZh}主仁與藝，「{secondChar}」增其堅韌，使你在挑戰中依舊成長綻放。",
+    "五行偏{elZh}，你天生善感且富學習力，「{secondChar}」穩定情緒，使靈感化為實踐。",
+    "生於{month}月，承{elZh}之氣，性情平和而具包容。「{secondChar}」令思緒更清明，成就長遠之志。",
+    "命帶{elZh}，氣質堅毅溫厚，「{secondChar}」潤化剛強，使理性與感性相得益彰。",
+    "{elZh}之性，使你開朗而善應變。「{secondChar}」補足五行，讓進取與寧靜並存。"
+  ];
+  const ZO_TEMPLATES_ZH = [
+    "屬於{zodiacZh}的你天性熱情果敢，第一字「{firstChar}」將這份火焰化為優雅與自信。",
+    "{zodiacZh}象徵冒險與領先，「{firstChar}」讓這份衝勁更顯沉著，展現勇氣與智慧並存。",
+    "典型的{zodiacZh}熱情率真，「{firstChar}」字化動為靜，讓自信更具魅力與感染力。",
+    "{zodiacZh}象徵勇氣與光明，「{firstChar}」延展此特質，使你以創意與力量影響他人。",
+    "{zodiacZh}的靈魂熱烈而自由，「{firstChar}」導引這股能量化為真誠的表達與領導氣場。",
+    "你的{zodiacZh}個性剛烈真誠，「{firstChar}」平衡其鋒芒，使魅力更顯從容。",
+    "{zodiacZh}象徵重生與勇氣，「{firstChar}」讓你的開創精神更具方向。",
+    "作為{zodiacZh}，你具領袖氣勢，「{firstChar}」呼應此光，使行動更有魅力與感染力。",
+    "{zodiacZh}面對挑戰不懼，「{firstChar}」收斂衝動，轉化為魅力與領導力。",
+    "{zodiacZh}能量熱烈自信，「{firstChar}」映照此光，成就優雅與堅毅兼具的特質。"
+  ];
+  function formatTpl(tpl, obj){
+    return tpl.replace(/\{(\w+)\}/g, (_,k)=> obj[k] ?? '');
+  }
+  function templateIndexBySeed(n){
+    const seedStr = makeSeedString() + '|TEMPLATE';
+    if ((qs.get('var')||'').toLowerCase()==='random') return Math.floor(Math.random()*n);
+    return Math.abs(hash2(seedStr)) % n;
+  }
+  const ctx = {
+    month: m,
+    el, elZh,
+    firstChar: cnGiven.charAt(0),
+    secondChar: cnGiven.charAt(1) || cnGiven.charAt(0),
+    zodiacEn: z,
+    zodiacZh: zInfo.cn,
+    traitEn: zInfo.traitEn,
+    traitZh: zInfo.traitZh
   };
+  const tplIdx = templateIndexBySeed(10);
 
- // ====== App init ======
-(async function init(){}
+  // === 8) 寫回 UI ===
+  $('enName').textContent   = `English Name: ${enName}`;
+  $('cnFullName').textContent = cnFull;
+  $('pinyinFull').textContent = pyFull;
 
-// === Loading overlay：先顯示動畫 ===
-const overlay = document.getElementById('loadingOverlay');
-const floatBox = document.getElementById('floatingZh');
+  $('tagline').innerHTML =
+    `Your exclusive Chinese name is <span class="em zh">${cnFull}</span>. Meaning: <span class="em">${chosen.meaningEn||''}</span>｜你的中文名字是「<span class="em zh">${cnFull}</span>」，意涵：<span class="em zh">${chosen.meaningZh||''}</span>`;
 
-function spawnFloatingZh(){
-  if (!floatBox) return;
-  floatBox.innerHTML = '';
-  const words = ['你的名字','正在','設計中','優雅','平衡','靈感','文化','典雅','詩意','和鳴'];
-  const W = window.innerWidth, H = window.innerHeight;
-  const N = 16;
-  for(let i=0;i<N;i++){
-    const span = document.createElement('span');
-    span.textContent = words[i % words.length];
-    const x = Math.random() * (W - 80);
-    const y = Math.random() * (H - 40);
-    const delay = (Math.random() * 2).toFixed(2);
-    const dur = (5 + Math.random() * 4).toFixed(2);
-    span.style.left = `${x}px`;
-    span.style.top  = `${y}px`;
-    span.style.animationDuration = `${dur}s`;
-    span.style.animationDelay = `${delay}s`;
-    floatBox.appendChild(span);
+  const sNoteEn = s.noteEn || ''; const sEra = s.era || ''; const sFEn = s.famousEn || '';
+  $('surnameLine').textContent = `${cnSurname} (${pySurname}) — ${sNoteEn}`;
+  $('surnameOrigin').innerHTML = `<strong>Origin:</strong> ${sEra} dynasty; famous figure: ${sFEn}`;
+
+  $('givenLine').textContent = `${cnGiven} (${pyGiven}) — ${chosen.meaningEn||''}`;
+  $('classicEn').innerHTML =
+    `<strong>Classic Source:</strong> The character “${primaryChar}” in <em>${sourceEn}</em> — “${quoteEn}”.`;
+  $('classicZh').innerHTML =
+    `<span class="zh"><strong>典籍出處：</strong>${sourceZh}——「${quoteZh}」。</span>`;
+
+  $('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> ${formatTpl(FE_TEMPLATES_EN[tplIdx], ctx)}`;
+  $('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong>${formatTpl(FE_TEMPLATES_ZH[tplIdx], ctx)}</span>`;
+  $('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${formatTpl(ZO_TEMPLATES_EN[tplIdx], ctx)}`;
+  $('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${formatTpl(ZO_TEMPLATES_ZH[tplIdx], ctx)}</span>`;
+
+  // === 9) 完成 → 淡出 overlay ===
+  try { clearInterval(floatTimer); } catch(e){}
+  if (overlay) {
+    overlay.classList.add('hide');
+    setTimeout(()=> overlay.remove(), 900);
   }
-}
-spawnFloatingZh();
-const floatTimer = setInterval(spawnFloatingZh, 2800);
 
-// === 1) 解析 Query ===
-const qs = new URLSearchParams(location.search);
-let enName = (qs.get('name') || '').trim();
-let gender = (qs.get('gender') || '').toLowerCase();
-const birth = qs.get('birth') || '';
-
-const DEMO = [
-  {en:'Emily Smith', gender:'female', birth:'1994-03-02'},
-  {en:'Daniel Lee', gender:'male',   birth:'1992-07-15'},
-  {en:'Sophia Chen', gender:'female',birth:'1996-06-28'}
-];
-if(!enName){
-  const demo = DEMO[Math.floor(Math.random()*DEMO.length)];
-  enName = demo.en;
-  if(!qs.get('gender')) gender = demo.gender;
-  if(!qs.get('birth')) {
-    // 以 demo 值刷新網址，之後流程一致
-    location.search = `?name=${encodeURIComponent(enName)}&gender=${demo.gender}&birth=${demo.birth}`;
-    return; // 等頁面重新載入
+  // Event Listeners should be outside of the overlay check
+  // TTS
+  function speak(text){
+    const u = new SpeechSynthesisUtterance(text);
+    const v = speechSynthesis.getVoices().find(v=>/zh|cmn|Chinese/i.test(v.lang));
+    if(v) u.voice=v; u.lang=v?.lang||'zh-TW'; u.rate=.96; u.pitch=1.04; speechSynthesis.cancel(); speechSynthesis.speak(u);
   }
-}
-
-// 英文姓（最後一段字）
-const parts = enName.split(/\s+/).filter(Boolean);
-const lastEn = (parts.length > 1 ? parts.at(-1) : parts[0] || '').toLowerCase();
-
-// === 2) 載入資料 ===
-let SURNAME_CATALOG = [];
-let CLASSICS = [];
-let GIVENS = [];
-
-try{
-  SURNAME_CATALOG = await loadJSON(PATH.surnames);
-  console.log('[HanName] surnames.json loaded:', SURNAME_CATALOG.length);
-}catch(e){
-  console.warn('Failed to load surnames.json — fallback to LIN.', e);
-  SURNAME_CATALOG = [{cn:'林', py:'Lín', aliases:['lin']}];
-}
-
-if (PATH.classics){
-  try{
-    CLASSICS = await loadJSON(PATH.classics);
-    console.log('[HanName] classics.json loaded:', CLASSICS.length);
-  }catch(e){
-    console.warn('Failed to load classics.json', e);
-    CLASSICS = [];
+  $('speak').addEventListener('click', ()=> speak(cnFull));
+  if (speechSynthesis && typeof speechSynthesis.onvoiceschanged !== 'undefined') {
+    speechSynthesis.onvoiceschanged = ()=>{};
   }
-}
 
-if (PATH.givens){
-  try{
-    GIVENS = await loadJSON(PATH.givens);
-    console.log('[HanName] givenNameData.json loaded:', GIVENS.length);
-  }catch(e){
-    console.warn('Failed to load givenNameData.json', e);
-    GIVENS = [];
-  }
-}
+  // Download PDF
+  $('download').addEventListener('click', async ()=>{
+    const { jsPDF } = window.jspdf;
+    const node = document.querySelector('#cert');
+    const canvas = await html2canvas(node, {scale:2});
+    const img = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p','pt','a4');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const ratio = pageW / canvas.width; const h = canvas.height * ratio;
+    pdf.addImage(img,'PNG',0,10,pageW,h);
+    pdf.save(`HanName_${cnFull}.pdf`);
+  });
 
-// === 3) 姓氏映射 ===
-function mapEnglishToSurname(last){
-  const key = (last||'').toLowerCase().replace(/[^a-z]/g,'');
-  if(!key) return SURNAME_CATALOG.find(s=>s.cn==='林') || SURNAME_CATALOG[0];
-  for(const s of SURNAME_CATALOG) {
-    if(s.aliases && s.aliases.map(a=>a.toLowerCase()).includes(key)) return s;
-  }
-  // fuzzy（簡易）
-  const iv = key[0] + key.replace(/[bcdfghjklmnpqrstvwxyz]/g,'');
-  let best=null, score=-1;
-  for(const s of SURNAME_CATALOG){
-    const a = (s.aliases && s.aliases[0]) || ((s.py||'')+"").toLowerCase();
-    if(!a) continue;
-    const iv2 = a[0] + a.replace(/[^aeiou]/g,'');
-    let sc = 0; if(a[0]===key[0]) sc+=2; if(iv===iv2) sc+=2; if(a.includes(key.slice(0,2))) sc+=1;
-    if(sc>score){score=sc; best=s;}
-  }
-  return best || SURNAME_CATALOG[0];
-}
-const s = mapEnglishToSurname(lastEn);
-const cnSurname = s.cn;
-const pySurname = s.py || '';
-
-// === 4) 五行 & 星座 ===
-let m=1,d=1;
-if(birth){
-  const dt=new Date(birth);
-  if(!isNaN(dt)) { m=dt.getMonth()+1; d=dt.getDate(); }
-}
-const el = MONTH_TO_ELEMENT[m] || 'Wood';
-const elZh = ELEMENT_ZH[el] || '木';
-
-function zodiac(mm,dd){
-  const z=[['Capricorn',1,19],['Aquarius',2,18],['Pisces',3,20],['Aries',4,19],['Taurus',5,20],['Gemini',6,20],['Cancer',7,22],['Leo',8,22],['Virgo',9,22],['Libra',10,22],['Scorpio',11,21],['Sagittarius',12,21],['Capricorn',12,31]];
-  for(const [name,MM,DD] of z){ if(mm<MM || (mm===MM && dd<=DD)) return name; }
-}
-const z = zodiac(m,d) || 'Pisces';
-const zInfo = ZODIAC_CN_MAP[z] || ZODIAC_CN_MAP['Pisces'];
-
-// === 5) 種子（可重現/隨機）＆ 挑選 Given Name ===
-const modeRandom = (qs.get('var') || '').toLowerCase() === 'random';   // &var=random 每次都不同
-const salt = qs.get('salt') || '';                                      // &salt=XYZ 手動切版
-
-function hash2(s){
-  let h = 2166136261 >>> 0; // FNV-1a
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return h | 0;
-}
-function makeSeedString(){
-  return [
-    (enName || '').toLowerCase(),
-    (birth  || '').toLowerCase(),
-    (gender || '').toLowerCase(),
-    (lastEn || '').toLowerCase(),
-    (cnSurname || ''),
-    (el || ''),
-    (z || ''),
-    salt
-  ].join('|');
-}
-function seededIndex(list, seedStr){
-  if (!list || !list.length) return -1;
-  let seed = hash2(seedStr);
-  if (modeRandom) {
-    const rand = (crypto?.getRandomValues)
-      ? crypto.getRandomValues(new Uint32Array(1))[0]
-      : Math.floor(Math.random() * 0xFFFFFFFF);
-    seed ^= rand;
-  }
-  return Math.abs(seed) % list.length;
-}
-
-// 最小備援池（真的抓不到 GIVENS 才會用到）
-const FALLBACK_POOL = {
-  Wood:{ female:[{cn:'雅寧',py:'Yǎníng',classicChar:'雅',classicSourceEn:'Shijing · Da Ya',classicSourceZh:'《詩經·大雅》',quoteEn:'Da Ya',quoteZh:'大雅',meaningEn:'elegance & serenity',meaningZh:'優雅與安寧'}],
-         male:  [{cn:'博遠',py:'Bóyuǎn',classicChar:'遠',classicSourceEn:'Qu Yuan · Lisao',classicSourceZh:'屈原·離騷',quoteEn:'The road ahead is long',quoteZh:'路漫漫其修遠兮',meaningEn:'breadth and vision',meaningZh:'胸襟與宏遠'}] },
-  Fire:{ female:[{cn:'曉恩',py:'Xiǎoēn',classicChar:'曉',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteEn:'Dawn breeze and waning moon',quoteZh:'曉風殘月',meaningEn:'gentle warmth',meaningZh:'溫柔晨光'}],
-         male:  [{cn:'文軒',py:'Wénxuān',classicChar:'文',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Be never weary of learning',quoteZh:'學而不厭',meaningEn:'cultured and bright',meaningZh:'文雅明朗'}] },
-  Earth:{ female:[{cn:'靜瑤',py:'Jìngyáo',classicChar:'瑤',classicSourceEn:'Tang poetry',classicSourceZh:'唐詩',quoteEn:'Jade terrace under moon',quoteZh:'瑤台月下',meaningEn:'quiet radiance',meaningZh:'靜中生光'}],
-         male:  [{cn:'志宏',py:'Zhìhóng',classicChar:'志',classicSourceEn:'Mencius',classicSourceZh:'《孟子》',quoteEn:'Set your will on the Way',quoteZh:'志於道，據於德',meaningEn:'great aspiration',meaningZh:'宏遠之志'}] },
-  Metal:{ female:[{cn:'景言',py:'Jǐngyán',classicChar:'言',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Words are the voice of the heart',quoteZh:'言為心聲',meaningEn:'clear expression',meaningZh:'清朗之言'}],
-         male:  [{cn:'宇辰',py:'Yǔchén',classicChar:'辰',classicSourceEn:'Song Ci',classicSourceZh:'宋詞',quoteEn:'A fine time and scene',quoteZh:'良辰美景',meaningEn:'cosmic poise',meaningZh:'宇量與時辰'}] },
-  Water:{ female:[{cn:'心如',py:'Xīnrú',classicChar:'心',classicSourceEn:'Aphorism',classicSourceZh:'文人語',quoteEn:'Let the heart be like water',quoteZh:'一心如水',meaningEn:'pure-hearted',meaningZh:'心澄如水'}],
-         male:  [{cn:'清柏',py:'Qīngbǎi',classicChar:'柏',classicSourceEn:'Analects',classicSourceZh:'《論語》',quoteEn:'Pine & cypress endure',quoteZh:'歲寒然後知松柏之後凋也',meaningEn:'clarity & integrity',meaningZh:'清正與節操'}] }
-};
-
-function pickGivenByData(element, gender){
-  const g = (gender || '').toLowerCase().startsWith('f') ? 'female'
-        : (gender || '').toLowerCase().startsWith('m') ? 'male'
-        : '';
-  let cand = GIVENS.filter(x =>
-    (!element || (x.element||'').toLowerCase() === element.toLowerCase()) &&
-    (!g || (x.gender||'').toLowerCase() === g)
-  );
-  if (!cand.length) cand = GIVENS.filter(x => (x.element||'').toLowerCase() === (element||'').toLowerCase());
-  if (!cand.length) cand = GIVENS.slice();
-  if (!cand.length) {
-    const pool = FALLBACK_POOL[element] || FALLBACK_POOL.Wood || { female:[], male:[] };
-    cand = (g==='female' ? (pool.female||[]) : (pool.male||[]));
-  }
-  const idx = seededIndex(cand, makeSeedString());
-  return idx >= 0 ? cand[idx] : null;
-}
-
-let chosen = pickGivenByData(el, gender);
-if (!chosen) {
-  chosen = FALLBACK_POOL.Wood.female[0];
-}
-
-const cnGiven = chosen.cn;
-const pyGiven  = chosen.py;
-const cnFull = cnSurname + cnGiven;
-const pyFull = `${pySurname} ${pyGiven}`.trim();
-
-// === 6) 經典查找（可用 classics.json 補強 chosen 的引用） ===
-function findClassic(char){
-  if (!char || !CLASSICS.length) return {};
-  return CLASSICS.find(c => c.char === char) || {};
-}
-const primaryChar = chosen.classicChar || cnGiven.charAt(0);
-const classic = findClassic(primaryChar);
-const sourceEn = classic.sourceEn || chosen.classicSourceEn || '';
-const sourceZh = classic.sourceZh || chosen.classicSourceZh || '';
-const quoteEn  = classic.quoteEn  || chosen.quoteEn  || '';
-const quoteZh  = classic.quoteZh  || chosen.quoteZh  || '';
-
-// === 7) 五行/星座模板（10組），用種子選版本（可重現或隨機） ===
-const FE_TEMPLATES_EN = [
-  "Born in month {month}, your nature aligns with {el} ({elZh}), symbolizing renewal and vitality. The second character “{secondChar}” strengthens inner balance and brings harmony to your temperament.",
-  "The energy of {el} ({elZh}) dominates your birth month, granting creativity and growth. By using “{secondChar}”, your name softens excess vigor and guides it toward stability.",
-  "April’s {el} element flows through you, evoking vitality and empathy. The character “{secondChar}” nurtures this flow, creating calm strength and steady purpose.",
-  "The essence of {elZh} in your chart emphasizes compassion and growth. “{secondChar}” anchors these qualities, bringing balance between idealism and action.",
-  "Your elemental path of {el} lends flexibility and intuition. The name’s latter part “{secondChar}” acts as a steadying root, harmonizing your emotions.",
-  "With {elZh} predominant, you possess natural empathy and an artistic touch. “{secondChar}” enhances resilience, letting you grow through challenges.",
-  "Born under strong {el} energy, you thrive in connection and learning. “{secondChar}” stabilizes your curiosity, grounding inspiration into real action.",
-  "Month {month} aligns with {elZh}, symbol of harmony and renewal. The second glyph “{secondChar}” enriches emotional balance and steady growth.",
-  "The presence of {el} grants resilience and compassion. “{secondChar}” weaves stability into your bright personality, balancing heart and reason.",
-  "{elZh} rules your birth season, gifting openness and adaptability. “{secondChar}” completes this harmony, allowing you to stay calm amid growth."
-];
-const ZO_TEMPLATES_EN = [
-  "As a {zodiacEn} ({zodiacZh}), you’re bold and passionate — the first character “{firstChar}” channels that fire into refinement and grace.",
-  "{zodiacEn} souls seek adventure; “{firstChar}” mirrors that spirit yet adds poise, helping you express courage with wisdom.",
-  "A true {zodiacEn} is radiant and driven — “{firstChar}” transforms impulse into confident charm, revealing natural leadership.",
-  "Under the sign of {zodiacEn}, the word “{firstChar}” refines your fiery drive into creativity and influence.",
-  "{zodiacEn} hearts blaze with independence — “{firstChar}” channels this flame toward grace and authentic self-expression.",
-  "As a {zodiacEn}, “{firstChar}” celebrates your fearless heart and helps project confidence that inspires others.",
-  "The {zodiacEn} constellation symbolizes courage and renewal — “{firstChar}” magnifies your pioneering light.",
-  "For a spirited {zodiacEn}, “{firstChar}” acts as a talisman of clarity, helping channel passion into purpose.",
-  "A {zodiacEn} thrives on challenge; “{firstChar}” refines your impulsive side, turning courage into charisma.",
-  "{zodiacEn} energy radiates confidence — “{firstChar}” echoes that light, bringing you both elegance and magnetism."
-];
-const FE_TEMPLATES_ZH = [
-  "生於{month}月，命格偏{elZh}，象徵生長與希望。名字第二字「{secondChar}」調和五行，使氣質更為均衡穩定。",
-  "{elZh}之氣主導你的出生月，帶來創造與靈性。「{secondChar}」一字平衡旺盛的生命力，使你兼具柔韌與堅定。",
-  "{month}月的{elZh}之性，賦予你成長與同理心。「{secondChar}」溫潤其間，使能量流動而不躁，內外和諧。",
-  "五行屬{elZh}者，多具包容與進取心。「{secondChar}」使其氣象中庸，讓理想與行動達到平衡。",
-  "命格中{elZh}旺盛，靈氣流動，「{secondChar}」如根般穩定，讓情感與理智共生。",
-  "{elZh}主仁與藝，「{secondChar}」增其堅韌，使你在挑戰中依舊成長綻放。",
-  "五行偏{elZh}，你天生善感且富學習力，「{secondChar}」穩定情緒，使靈感化為實踐。",
-  "生於{month}月，承{elZh}之氣，性情平和而具包容。「{secondChar}」令思緒更清明，成就長遠之志。",
-  "命帶{elZh}，氣質堅毅溫厚，「{secondChar}」潤化剛強，使理性與感性相得益彰。",
-  "{elZh}之性，使你開朗而善應變。「{secondChar}」補足五行，讓進取與寧靜並存。"
-];
-const ZO_TEMPLATES_ZH = [
-  "屬於{zodiacZh}的你天性熱情果敢，第一字「{firstChar}」將這份火焰化為優雅與自信。",
-  "{zodiacZh}象徵冒險與領先，「{firstChar}」讓這份衝勁更顯沉著，展現勇氣與智慧並存。",
-  "典型的{zodiacZh}熱情率真，「{firstChar}」字化動為靜，讓自信更具魅力與感染力。",
-  "{zodiacZh}象徵勇氣與光明，「{firstChar}」延展此特質，使你以創意與力量影響他人。",
-  "{zodiacZh}的靈魂熱烈而自由，「{firstChar}」導引這股能量化為真誠的表達與領導氣場。",
-  "你的{zodiacZh}個性剛烈真誠，「{firstChar}」平衡其鋒芒，使魅力更顯從容。",
-  "{zodiacZh}象徵重生與勇氣，「{firstChar}」讓你的開創精神更具方向。",
-  "作為{zodiacZh}，你具領袖氣勢，「{firstChar}」呼應此光，使行動更有魅力與感染力。",
-  "{zodiacZh}面對挑戰不懼，「{firstChar}」收斂衝動，轉化為魅力與領導力。",
-  "{zodiacZh}能量熱烈自信，「{firstChar}」映照此光，成就優雅與堅毅兼具的特質。"
-];
-function formatTpl(tpl, obj){
-  return tpl.replace(/\{(\w+)\}/g, (_,k)=> obj[k] ?? '');
-}
-function templateIndexBySeed(n){
-  const seedStr = makeSeedString() + '|TEMPLATE';
-  if ((qs.get('var')||'').toLowerCase()==='random') return Math.floor(Math.random()*n);
-  return Math.abs(hash2(seedStr)) % n;
-}
-const ctx = {
-  month: m,
-  el, elZh,
-  firstChar: cnGiven.charAt(0),
-  secondChar: cnGiven.charAt(1) || cnGiven.charAt(0),
-  zodiacEn: z,
-  zodiacZh: zInfo.cn,
-  traitEn: zInfo.traitEn,
-  traitZh: zInfo.traitZh
-};
-const tplIdx = templateIndexBySeed(10);
-
-// === 8) 寫回 UI ===
-const $ = (id)=>document.getElementById(id);
-$('enName').textContent   = `English Name: ${enName}`;
-$('cnFullName').textContent = cnFull;
-$('pinyinFull').textContent = pyFull;
-
-$('tagline').innerHTML =
-  `Your exclusive Chinese name is <span class="em zh">${cnFull}</span>. Meaning: <span class="em">${chosen.meaningEn||''}</span>｜你的中文名字是「<span class="em zh">${cnFull}</span>」，意涵：<span class="em zh">${chosen.meaningZh||''}</span>`;
-
-const sNoteEn = s.noteEn || ''; const sEra = s.era || ''; const sFEn = s.famousEn || '';
-$('surnameLine').textContent = `${cnSurname} (${pySurname}) — ${sNoteEn}`;
-$('surnameOrigin').innerHTML = `<strong>Origin:</strong> ${sEra} dynasty; famous figure: ${sFEn}`;
-
-$('givenLine').textContent = `${cnGiven} (${pyGiven}) — ${chosen.meaningEn||''}`;
-$('classicEn').innerHTML =
-  `<strong>Classic Source:</strong> The character “${primaryChar}” in <em>${sourceEn}</em> — “${quoteEn}”.`;
-$('classicZh').innerHTML =
-  `<span class="zh"><strong>典籍出處：</strong>${sourceZh}——「${quoteZh}」。</span>`;
-
-$('fiveElEn').innerHTML = `<strong>Five-Element Reading:</strong> ${formatTpl(FE_TEMPLATES_EN[tplIdx], ctx)}`;
-$('fiveElZh').innerHTML = `<span class="zh"><strong>五行解讀：</strong>${formatTpl(FE_TEMPLATES_ZH[tplIdx], ctx)}</span>`;
-$('zodiacEn').innerHTML = `<strong>Zodiac:</strong> ${formatTpl(ZO_TEMPLATES_EN[tplIdx], ctx)}`;
-$('zodiacZh').innerHTML = `<span class="zh"><strong>星象：</strong>${formatTpl(ZO_TEMPLATES_ZH[tplIdx], ctx)}</span>`;
-
-// === 9) 完成 → 淡出 overlay ===
-try { clearInterval(floatTimer); } catch(e){}
-if (overlay) {
-  overlay.classList.add('hide');
-  setTimeout(()=> overlay.remove(), 900);
-    // TTS
-    function speak(text){
-      const u = new SpeechSynthesisUtterance(text);
-      const v = speechSynthesis.getVoices().find(v=>/zh|cmn|Chinese/i.test(v.lang));
-      if(v) u.voice=v; u.lang=v?.lang||'zh-TW'; u.rate=.96; u.pitch=1.04; speechSynthesis.cancel(); speechSynthesis.speak(u);
-    }
-    $('speak').addEventListener('click', ()=> speak(cnFull));
-    if (speechSynthesis && typeof speechSynthesis.onvoiceschanged !== 'undefined') {
-      speechSynthesis.onvoiceschanged = ()=>{};
-    }
-
-    // Download PDF
-    $('download').addEventListener('click', async ()=>{
-      const { jsPDF } = window.jspdf;
-      const node = document.querySelector('#cert');
-      const canvas = await html2canvas(node, {scale:2});
-      const img = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p','pt','a4');
-      const pageW = pdf.internal.pageSize.getWidth();
-      const ratio = pageW / canvas.width; const h = canvas.height * ratio;
-      pdf.addImage(img,'PNG',0,10,pageW,h);
-      pdf.save(`HanName_${cnFull}.pdf`);
-    });
-
-    // Share
-    $('share').addEventListener('click', async ()=>{
-      const url = location.href;
-      const text = `My Chinese name on HanName: ${cnFull} (${pyFull}).`;
-      if(navigator.share){ try{ await navigator.share({title:'HanName Certificate', text, url}); }catch(e){} }
-      else{ await navigator.clipboard.writeText(url); alert('Link copied!'); }
-    });
-  })();
-  </script>
+  // Share
+  $('share').addEventListener('click', async ()=>{
+    const url = location.href;
+    const text = `My Chinese name on HanName: ${cnFull} (${pyFull}).`;
+    if(navigator.share){ try{ await navigator.share({title:'HanName Certificate', text, url}); }catch(e){} }
+    else{ await navigator.clipboard.writeText(url); alert('Link copied!'); }
+  });
+})();
+</script>
 </body>
-</html> 
+</html>

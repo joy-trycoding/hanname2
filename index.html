@@ -7,6 +7,35 @@
   <meta name="description" content="Discover a Chinese name crafted from sound, meaning, and heritage. Download a personalized certificate or order a traditional seal gift box." />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Noto+Serif+TC:wght@400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    /* --- Hero main photo (replaces the small badge) --- */
+.hero-photo{
+  position:relative;
+  width:100%;
+  aspect-ratio: 16 / 9;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
+  background:#eee;
+}
+.hero-photo img{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+/* overlay tagline on the left */
+.hero-photo .tagline{
+  position:absolute; left:16px; top:16px;
+  background:rgba(28,27,26,.78); color:#fff;
+  padding:8px 12px; border-radius:999px;
+  font-weight:700; letter-spacing:.2px; font-size:14px;
+}
+
+/* smaller on mobile */
+@media (max-width: 900px){
+  .hero{gap:18px}
+  .hero-photo{aspect-ratio: 3 / 2;}
+  .hero-photo .tagline{font-size:13px; padding:6px 10px}
+}
+
     :root{
       --paper:#F5F1E8;   /* warm ivory */
       --paper-2:#F8F4EB;
@@ -182,7 +211,18 @@
     <!-- HERO -->
     <section class="section hero" id="start">
       <div>
-        <span class="hero-badge" aria-label="badge">✨ Culture · Sound · Meaning</span>
+        <!-- NEW: main hero image replaces the small badge -->
+<figure class="hero-photo" aria-label="Elderly calligraphy scene">
+  <picture>
+    <!-- 大螢幕優先載入寬幅圖 -->
+    <source media="(min-width: 901px)" srcset="assets/hero-calligraphy-desk.jpg">
+    <!-- 手機可用同張或另備一張裁切圖（可先同一路徑） -->
+    <source media="(max-width: 900px)" srcset="assets/hero-calligraphy-desk.jpg">
+    <img src="assets/hero-calligraphy-desk.jpg" alt="A serene calligraphy desk with brush, ink, and warm sunlight" loading="eager" fetchpriority="high">
+  </picture>
+  <div class="tagline">Get your exclusive Chinese Name.</div>
+</figure>
+
         <h1>Discover your <em>Chinese identity</em> — one name at a time.</h1>
         <p class="lede">HanName crafts a Chinese name that fits your story. We blend sound, meaning, and heritage — and can reflect your birthday or zodiac — into a beautiful identity you can own, share, and even seal in a traditional stamp.</p>
 

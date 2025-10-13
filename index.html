@@ -100,7 +100,14 @@
     section.section.is-visible{opacity:1;transform:none}
 
     /* Hero */
-    .hero{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;padding:42px 0 30px}
+    .hero{
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  align-items:center;
+  justify-items:center;
+  gap:48px; /* 稍微拉開間距 */
+  padding:54px 0 34px;
+}
     .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff7;font-size:12px}
     .hero h1{font-family:'Playfair Display','Noto Serif TC',serif;font-size:clamp(26px,3.6vw,46px);line-height:1.2;margin:14px 0}
     .hero p.lede{font-size:clamp(15px,2.1vw,18px);color:#2a2a2a;margin:10px 0 18px}
@@ -180,6 +187,47 @@
     @media (prefers-reduced-motion:reduce){
       *{animation:none!important;transition:none!important}
     }
+    /* --- Hero main photo (RWD & safe) --- */
+    .hero-photo{
+  position:relative;
+  width:100%;
+  max-width:640px; /* 限制圖片寬度避免撐太滿 */
+  margin:0 auto;   /* 在左欄置中 */
+  aspect-ratio:16/9;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
+  background:#eee;
+}
+.hero-photo picture, .hero-photo img{
+  width:100%; height:100%; display:block; object-fit:cover;
+}
+.hero-photo img{ object-position:center; }
+.hero-photo .tagline{
+  position:absolute; left:16px; top:16px;
+  background:rgba(28,27,26,.78); color:#fff;
+  padding:8px 12px; border-radius:999px;
+  font-weight:700; letter-spacing:.2px; font-size:14px;}
+
+  @media (max-width: 900px){
+  .hero{
+    grid-template-columns:1fr;
+    justify-items:center; /* 確保在小螢幕置中 */
+    gap:22px;
+    padding:28px 0;
+  }
+  .hero-photo{
+    max-width:90%;
+    aspect-ratio:3/2;
+  }
+}
+
+/* 讓右側預覽卡在手機落到圖片下方時，間距更舒服 */
+@media (max-width: 900px){
+  .hero-card{ margin-top:4px; }
+}
+
   </style>
   <!-- Base for GitHub Pages (works under /hanname2/) -->
   <base href="https://joy-trycoding.github.io/hanname2/">
@@ -212,16 +260,22 @@
     <section class="section hero" id="start">
       <div>
         <!-- NEW: main hero image replaces the small badge -->
-<figure class="hero-photo" aria-label="Elderly calligraphy scene">
-  <picture>
-    <!-- 大螢幕優先載入寬幅圖 -->
-    <source media="(min-width: 901px)" srcset="assets/hero-calligraphy-desk.jpg">
-    <!-- 手機可用同張或另備一張裁切圖（可先同一路徑） -->
-    <source media="(max-width: 900px)" srcset="assets/hero-calligraphy-desk.jpg">
-    <img src="assets/hero-calligraphy-desk.jpg" alt="A serene calligraphy desk with brush, ink, and warm sunlight" loading="eager" fetchpriority="high">
-  </picture>
-  <div class="tagline">Get your exclusive Chinese Name.</div>
-</figure>
+        <figure class="hero-photo" aria-label="Elderly calligraphy scene">
+          <picture>
+            <!-- ✅ 桌機用寬圖 -->
+            <source media="(min-width: 901px)" srcset="assets/hero-calligraphy-desk.jpg">
+            <!-- ✅ 手機可用同張或另備裁切圖；若你做了 mobile 版，就換成 assets/hero-calligraphy-desk-mobile.jpg -->
+            <source media="(max-width: 900px)" srcset="assets/hero-calligraphy-desk.jpg">
+            <img
+              src="assets/hero-calligraphy-desk.jpg"
+              alt="A serene calligraphy desk with brush, ink, and warm sunlight"
+              loading="eager" fetchpriority="high"
+              width="1792" height="1024"
+              onerror="this.alt='Image unavailable — check /assets/hero-calligraphy-desk.jpg'; this.style.background='#ddd';"
+            >
+          </picture>
+          <div class="tagline">Get your exclusive Chinese Name.</div>
+        </figure>
 
         <h1>Discover your <em>Chinese identity</em> — one name at a time.</h1>
         <p class="lede">HanName crafts a Chinese name that fits your story. We blend sound, meaning, and heritage — and can reflect your birthday or zodiac — into a beautiful identity you can own, share, and even seal in a traditional stamp.</p>

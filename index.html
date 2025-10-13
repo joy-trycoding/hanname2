@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HanName — Your Chinese Identity, Personalized</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Discover a Chinese name crafted from sound, meaning, and heritage. Download a personalized certificate or order a traditional seal gift box." />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Noto+Serif+TC:wght@400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     :root{
-      --paper:#F5F1E8; /* warm ivory */
+      --paper:#F5F1E8;   /* warm ivory */
       --paper-2:#F8F4EB;
-      --ink:#1C1B1A;   /* deep ink */
-      --accent:#C49A6C;/* gold brown */
-      --accent-2:#8E6A3E; /* darker gold */
+      --ink:#1C1B1A;     /* deep ink */
+      --accent:#C49A6C;  /* gold brown */
+      --accent-2:#8E6A3E;/* darker gold */
       --muted:#6B6B6B;
       --line:#E5DFD3;
       --btn:#1C1B1A;
@@ -21,224 +21,197 @@
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; background:var(--paper); color:var(--ink);
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Arial, sans-serif;
+      margin:0;background:var(--paper);color:var(--ink);
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Arial, sans-serif;
       line-height:1.6;
+      text-rendering:optimizeLegibility;
+      -webkit-font-smoothing:antialiased;
     }
-    /* --- Decorative cultural vibe: subtle rice paper + lattice pattern --- */
+
+    /* Decorative subtle background */
     .rice{
-      position:fixed; inset:0; pointer-events:none; z-index:-1;
+      position:fixed;inset:0;pointer-events:none;z-index:-1;
       background:
         radial-gradient(1000px 600px at 120% -10%, #b48c4a20, #0000 60%),
         radial-gradient(900px 600px at -20% 110%, #b48c4a18, #0000 60%),
-        repeating-linear-gradient(145deg, #0000 0 24px, #b48c4a0d 24px 25px),
-        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><g fill="none" stroke="%23d8cfbf" stroke-opacity="0.5"><path d="M0 80h160M80 0v160"/><circle cx="80" cy="80" r="78"/></g></svg>');
-      background-blend-mode: multiply;
-      opacity:.6;
+        repeating-linear-gradient(145deg, #0000 0 24px, #b48c4a0d 24px 25px);
+      background-blend-mode:multiply;opacity:.55;
     }
 
+    /* Layout */
+    .container{max-width:1100px;margin:0 auto;padding:0 20px}
     header{
-      position:sticky; top:0; z-index:20; backdrop-filter:saturate(180%) blur(6px);
-      background:rgba(245,241,232,.9); border-bottom:1px solid var(--line);
+      position:sticky;top:0;z-index:20;
+      backdrop-filter:saturate(180%) blur(6px);
+      background:rgba(245,241,232,.9);
+      border-bottom:1px solid var(--line);
     }
-    .container{max-width:1100px; margin:0 auto; padding:0 20px}
-    .nav{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
-    .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit}
-    .brand img{height:32px; width:auto}
-    .brand-title{font-family:'Playfair Display','Noto Serif TC',serif; font-weight:700; letter-spacing:.2px}
-    .brand-sub{font-size:12px; color:var(--muted)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+    .brand img{height:32px;width:auto}
+    .brand-title{font-family:'Playfair Display','Noto Serif TC',serif;font-weight:700;letter-spacing:.2px}
+    .brand-sub{font-size:12px;color:var(--muted)}
 
-    .cta-row{display:flex; gap:12px; align-items:center}
-    .btn{appearance:none; border:1px solid #0000; padding:12px 16px; border-radius:999px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:opacity .2s ease, transform .2s ease, background-color .2s ease, border-color .2s ease;}
-    .btn-primary{background:var(--btn); color:var(--btn-text)}
-    .btn-primary:hover{opacity:.92; transform:translateY(-1px)}
-    .btn-ghost{background:transparent; border-color:var(--ink); color:var(--ink)}
+    /* Buttons */
+    .btn{
+      appearance:none;border:1px solid #0000;padding:12px 16px;border-radius:999px;
+      cursor:pointer;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+      transition:opacity .2s ease,transform .2s ease,background-color .2s ease,border-color .2s ease;
+      min-height:44px;
+    }
+    .btn-primary{background:var(--btn);color:var(--btn-text)}
+    .btn-primary:hover{opacity:.92;transform:translateY(-1px)}
+    .btn-ghost{background:transparent;border:1px solid var(--ink);color:var(--ink)}
     .btn-ghost:hover{background:#00000010}
 
-    /* --- Section base with fade transitions --- */
-    section.section{opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease; will-change:opacity, transform}
-    section.section.is-visible{opacity:1; transform:none}
-    section.section.is-dim{opacity:.35}
+    .cta-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    /* Sections base + reveal */
+    section.section{opacity:0;transform:translateY(14px);transition:opacity .6s ease, transform .6s ease;will-change:opacity,transform}
+    section.section.is-visible{opacity:1;transform:none}
 
     /* Hero */
-    .hero{display:grid; grid-template-columns:1.2fr 1fr; gap:40px; padding:54px 0 34px}
-    .hero-badge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:#fff7; font-size:12px}
-    .hero h1{font-family:'Playfair Display','Noto Serif TC',serif; font-size:clamp(28px,3.5vw,46px); line-height:1.2; margin:14px 0}
-    .hero p.lede{font-size:clamp(15px,2.1vw,18px); color:#2a2a2a; margin:10px 0 18px}
-    .hero-card{background:#fff; border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:0 6px 30px rgba(0,0,0,.06)}
+    .hero{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;padding:42px 0 30px}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff7;font-size:12px}
+    .hero h1{font-family:'Playfair Display','Noto Serif TC',serif;font-size:clamp(26px,3.6vw,46px);line-height:1.2;margin:14px 0}
+    .hero p.lede{font-size:clamp(15px,2.1vw,18px);color:#2a2a2a;margin:10px 0 18px}
+    .hero-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 6px 30px rgba(0,0,0,.06)}
 
-    /* --- REDESIGNED: Form Input Group --- */
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        margin-top: 24px;
+    /* Form */
+    .form-group{display:flex;flex-direction:column;gap:14px;margin-top:20px}
+    .strip{display:flex;gap:10px;flex-wrap:wrap}
+    input[type="text"],input[type="date"]{
+      flex:1 1 240px;border:1px solid var(--line);background:#fff;padding:14px 16px;border-radius:12px;outline:none;font:inherit;min-height:50px;width:100%;
     }
-    .strip{display:flex; gap:10px; flex-wrap:wrap; }
-    input[type="text"], input[type="date"]{
-      flex:1 1 200px; border:1px solid var(--line); background:#fff; padding:14px 16px; border-radius:12px; outline:none; font:inherit; min-height:50px
-    }
-    #goBtn {
-        height: 50px;
-        width: 100%;
-        font-size: 16px;
-    }
+    #goBtn{width:100%;font-size:16px}
 
-    /* Gender Selection */
-    #genderSelection{
-      display: none;
-      opacity: 0;
-      gap: 10px;
-      transition: opacity 0.4s ease, transform 0.4s ease;
-      transform: translateY(-10px);
-    }
-    #genderSelection.visible{
-      display: flex;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .gender-btn {
-      flex: 1;
-      padding: 10px 16px;
-      border: 1px solid var(--line);
-      background-color: #fff;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      height: 50px;
-    }
-    .gender-btn.active {
-      background-color: var(--ink);
-      color: var(--btn-text);
-      border-color: var(--ink);
-    }
-    .gender-label { font-size: 13px; font-weight: 500; color: #333; margin-bottom: 6px; padding-left: 4px; }
+    /* Gender */
+    #genderSelection{display:none;opacity:0;gap:10px;transition:opacity .4s ease, transform .4s ease;transform:translateY(-10px)}
+    #genderSelection.visible{display:flex;opacity:1;transform:translateY(0)}
+    .gender-label{font-size:13px;font-weight:600;color:#333;margin-bottom:6px;padding-left:4px}
+    .gender-btn{flex:1;padding:10px 16px;border:1px solid var(--line);background:#fff;border-radius:12px;cursor:pointer;font-weight:600;height:50px}
+    .gender-btn.active{background:var(--ink);color:var(--btn-text);border-color:var(--ink)}
 
-
-    /* Feature trio */
-    .features{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:32px 0}
-    .feature{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px}
-    .feature h3{font-family:'Noto Serif TC','Playfair Display',serif; margin:6px 0 6px; font-size:18px}
+    /* Features (3 cards) */
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 6px}
+    .feature{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
+    .feature h3{font-family:'Noto Serif TC','Playfair Display',serif;margin:6px 0 6px;font-size:18px}
     .feature .icon{font-size:20px}
-    .sep{height:1px; background:linear-gradient(90deg, #0000, var(--line), #0000); margin:20px 0}
+    .sep{height:1px;background:linear-gradient(90deg,#0000,var(--line),#0000);margin:16px 0}
 
-    /* Stories (case studies) */
-    .stories{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
-    .story{background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px}
-    .story blockquote{margin:0; font-size:15px}
-    .story .who{margin-top:10px; font-size:13px; color:var(--muted)}
+    /* Stories */
+    .stories{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .story{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+    .story blockquote{margin:0;font-size:15px}
+    .story .who{margin-top:10px;font-size:13px;color:var(--muted)}
 
     /* Counter band */
-    .band{background:var(--paper-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:14px 0}
-    .counter{display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700}
-    .odometer{font-variant-numeric: tabular-nums; letter-spacing:.5px}
+    .band{background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+    .counter{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700}
+    .odometer{font-variant-numeric:tabular-nums;letter-spacing:.5px}
 
-    /* Pricing cards */
-    .pricing{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+    /* Pricing */
+    .pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .pricing .feature h3{display:flex;align-items:center;gap:8px}
 
-    /* NEW: Gift Modal Styles */
-    #giftModal {
-      position: fixed; inset: 0;
-      background: rgba(28, 27, 26, 0.7);
-      display: none; align-items: center; justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    #giftModal.visible { display: flex; opacity: 1; }
-    .modal-content {
-      background: var(--paper);
-      border-radius: 20px;
-      padding: 24px;
-      max-width: 500px;
-      width: 90%;
-      position: relative;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      transform: scale(0.95);
-      transition: transform 0.3s ease;
-    }
-    #giftModal.visible .modal-content { transform: scale(1); }
-    .modal-close-btn {
-      position: absolute; top: 12px; right: 12px;
-      background: var(--paper-2); border: 1px solid var(--line);
-      border-radius: 50%; width: 32px; height: 32px;
-      font-size: 18px; line-height: 1;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-    }
-    .modal-img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 16px; }
-    .modal-title { font-family:'Playfair Display','Noto Serif TC',serif; font-size: 22px; margin: 0 0 8px; }
-    .modal-desc { margin: 0 0 16px; font-size: 15px; color: #333; }
-    .modal-pricing { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
-    .modal-price-special { font-size: 24px; font-weight: 700; color: var(--accent-2); }
-    .modal-price-original { font-size: 16px; text-decoration: line-through; color: var(--muted); }
-    
-    /* Responsive */
-    @media (max-width: 1024px){
-      .container{padding:0 16px}
-    }
+    /* Brand Story (NEW) */
+    .brand-story{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:start}
+    .brand-story .story-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+    .brand-story img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line)}
+
+    /* Gift Modal */
+    #giftModal{position:fixed;inset:0;background:rgba(28,27,26,.7);display:none;align-items:center;justify-content:center;z-index:1000;opacity:0;transition:opacity .3s ease}
+    #giftModal.visible{display:flex;opacity:1}
+    .modal-content{background:var(--paper);border-radius:20px;padding:24px;max-width:520px;width:90%;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.2);transform:scale(.95);transition:transform .3s ease}
+    #giftModal.visible .modal-content{transform:scale(1)}
+    .modal-close-btn{position:absolute;top:12px;right:12px;background:var(--paper-2);border:1px solid var(--line);border-radius:50%;width:32px;height:32px;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .modal-img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);margin-bottom:16px}
+    .modal-title{font-family:'Playfair Display','Noto Serif TC',serif;font-size:22px;margin:0 0 8px}
+    .modal-desc{margin:0 0 16px;font-size:15px;color:#333}
+    .modal-pricing{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+    .modal-price-special{font-size:24px;font-weight:700;color:var(--accent-2)}
+    .modal-price-original{font-size:16px;text-decoration:line-through;color:var(--muted)}
+
+    /* Sticky bottom CTA for mobile */
+    .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(245,241,232,.96);border-top:1px solid var(--line);backdrop-filter:saturate(180%) blur(6px)}
+    .sticky-cta .cta-wrap{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px}
+    .sticky-cta .cta-text{font-weight:700}
+
+    /* RWD */
+    @media (max-width: 1024px){.container{padding:0 16px}}
     @media (max-width: 900px){
-      .hero{grid-template-columns:1fr; gap:22px; padding:28px 0}
+      .hero{grid-template-columns:1fr;gap:22px;padding:28px 0}
       .features{grid-template-columns:1fr}
       .stories{grid-template-columns:1fr}
       .pricing{grid-template-columns:1fr}
+      .brand-story{grid-template-columns:1fr}
       .cta-row{display:none}
     }
-      /* Sticky bottom CTA */
-    .sticky-cta{position:fixed; left:0; right:0; bottom:0; z-index:30; background:rgba(245,241,232,.96); border-top:1px solid var(--line); backdrop-filter:saturate(180%) blur(6px)}
-    .sticky-cta .cta-wrap{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0}
-    .sticky-cta .cta-text{font-weight:600}
     @media (min-width: 901px){.sticky-cta{display:none}}
+    @media (prefers-reduced-motion:reduce){
+      *{animation:none!important;transition:none!important}
+    }
   </style>
+  <!-- Base for GitHub Pages (works under /hanname2/) -->
   <base href="https://joy-trycoding.github.io/hanname2/">
 </head>
 <body>
   <div class="rice" aria-hidden="true"></div>
+
+  <!-- Header / Nav -->
   <header>
     <div class="container nav">
-      <a class="brand" href="#" aria-label="HanName home">
-        <img src="assets/logo.svg" alt="HanName logo" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'HanName',style:'font-weight:700;font-family:Playfair Display, Noto Serif TC, serif;font-size:20px;'}))" />
+      <a class="brand" href="index.html" aria-label="HanName home">
+        <img src="assets/logo.svg" alt="HanName logo" loading="lazy"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'HanName',style:'font-weight:700;font-family:Playfair Display, Noto Serif TC, serif;font-size:20px;'}))" />
         <div>
           <div class="brand-title">HanName</div>
           <div class="brand-sub">Chinese Identity Generator</div>
         </div>
       </a>
-      <nav class="cta-row">
+      <nav class="cta-row" aria-label="primary">
         <a class="btn btn-ghost" href="#how">How it works</a>
+        <a class="btn btn-ghost" href="#story">Our Story</a>
+        <a class="btn btn-ghost" href="gift.html">Gifts</a>
         <a class="btn btn-primary" href="#start">Discover your name</a>
       </nav>
     </div>
   </header>
 
   <main class="container">
+    <!-- HERO -->
     <section class="section hero" id="start">
       <div>
         <span class="hero-badge" aria-label="badge">✨ Culture · Sound · Meaning</span>
         <h1>Discover your <em>Chinese identity</em> — one name at a time.</h1>
         <p class="lede">HanName crafts a Chinese name that fits your story. We blend sound, meaning, and heritage — and can reflect your birthday or zodiac — into a beautiful identity you can own, share, and even seal in a traditional stamp.</p>
-        
+
+        <!-- FORM -->
         <div class="form-group" role="form" aria-label="quick start">
-            <div class="strip">
-                <input type="text" id="enName" placeholder="Enter your name" aria-label="Your name" />
-                <input type="date" id="birth" aria-label="Birthday (optional)" />
+          <div class="strip">
+            <label class="sr-only" for="enName" aria-hidden="true" style="position:absolute;left:-9999px">Your name</label>
+            <input type="text" id="enName" placeholder="Enter your name" aria-label="Your name" inputmode="text" autocomplete="name"/>
+
+            <label class="sr-only" for="birth" aria-hidden="true" style="position:absolute;left:-9999px">Birthday</label>
+            <input type="date" id="birth" aria-label="Birthday (optional)" />
+          </div>
+
+          <div id="genderSelection">
+            <div>
+              <div class="gender-label">Gender (optional)</div>
+              <div class="strip">
+                <button class="gender-btn" data-gender="female" type="button">Female</button>
+                <button class="gender-btn" data-gender="male" type="button">Male</button>
+                <button class="gender-btn" data-gender="non-binary" type="button">Non-binary</button>
+              </div>
             </div>
-            
-            <div id="genderSelection">
-                <div>
-                    <div class="gender-label">Gender (optional)</div>
-                    <div class="strip">
-                        <button class="gender-btn" data-gender="female">Female</button>
-                        <button class="gender-btn" data-gender="male">Male</button>
-                        <button class="gender-btn" data-gender="non-binary">Non-binary</button>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="btn btn-primary" id="goBtn" data-track="discover-name">
-                Get my Chinese name
-            </button>
+          </div>
+
+          <button class="btn btn-primary" id="goBtn" data-track="discover-name">Get my Chinese name</button>
         </div>
 
-        <div class="features">
+        <!-- FEATURES -->
+        <div class="features" aria-label="key features">
           <div class="feature">
             <div class="icon">📜</div>
             <h3>Meaning & Heritage</h3>
@@ -257,45 +230,69 @@
         </div>
       </div>
 
+      <!-- SAMPLE PREVIEW -->
       <aside class="hero-card" aria-label="sample certificate preview">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
-          <div style="font-family:'Noto Serif TC','Playfair Display',serif; font-size:22px;">示例 · Sample</div>
-          <div style="font-size:12px; color:var(--muted)">Preview</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-family:'Noto Serif TC','Playfair Display',serif;font-size:22px">示例 · Sample</div>
+          <div style="font-size:12px;color:var(--muted)">Preview</div>
         </div>
         <div class="sep"></div>
-        <div style="display:grid; grid-template-columns: 1fr; gap:10px">
+        <div style="display:grid;gap:10px">
           <div>
-            <div style="font-family:'Noto Serif TC',serif; font-size:36px; font-weight:600; letter-spacing:.06em;">雅寧</div>
-            <div style="color:var(--muted); font-size:14px; margin-top:2px">Yǎníng · elegant & tranquil</div>
+            <div style="font-family:'Noto Serif TC',serif;font-size:36px;font-weight:600;letter-spacing:.06em">雅寧</div>
+            <div style="color:var(--muted);font-size:14px;margin-top:2px">Yǎníng · elegant & tranquil</div>
           </div>
-          <div style="font-size:14px; color:#272727">
+          <div style="font-size:14px;color:#272727">
             <strong>Meaning.</strong> “雅” (graceful refinement), “寧” (calm, serene). Balanced qualities for air signs.
           </div>
-          <div style="font-size:13px; color:var(--muted)">
+          <div style="font-size:13px;color:var(--muted)">
             From <em>Classic of Poetry</em> (《詩經》) imagery of elegance and harmony. Crafted by sound (yaˇ · níng) and element balance.
           </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; align-items:center">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;align-items:center">
             <a class="btn btn-ghost" href="#how" data-track="see-how">See how it works</a>
-            <a class="btn btn-primary" href="#pricing" data-track="get-certificate">Get your certificate</a>
+            <a class="btn btn-primary" href="gift.html" data-track="get-certificate">Get your certificate</a>
             <button class="btn btn-ghost" type="button" id="ttsBtn" aria-label="Play Chinese pronunciation" data-track="play-tts">🔊 Hear name</button>
           </div>
         </div>
       </aside>
     </section>
 
-    <section class="section" id="how" style="margin:34px 0 20px">
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how" style="margin:26px 0 16px">
       <div class="sep"></div>
-      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">How it works</h2>
-      <ol style="padding-left:18px; margin:0; color:#2a2a2a">
+      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif;font-size:24px;margin:0 0 10px">How it works</h2>
+      <ol style="padding-left:18px;margin:0;color:#2a2a2a">
         <li>Enter your English name (optional: birthday or zodiac).</li>
         <li>We craft Chinese name options by sound, meaning, and heritage.</li>
         <li>Download a personalized certificate — or order a traditional seal gift box.</li>
       </ol>
     </section>
 
-    <section class="section" id="stories" aria-label="Case studies" style="margin:20px 0 20px">
+    <!-- BRAND STORY (NEW) -->
+    <section class="section" id="story" aria-label="Brand story" style="margin:20px 0 12px">
       <div class="sep"></div>
-      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">Stories from our users</h2>
+      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif;font-size:24px;margin:0 0 10px">Our Story — Made with Heart</h2>
+      <div class="brand-story">
+        <div class="story-card">
+          <p>HanName began with a simple belief: <em>a name is a bridge</em>. For friends around the world, a Chinese name is not a translation — it is a welcoming doorway into a living culture.</p>
+          <p>Each name we craft balances <strong>sound</strong> (how it feels to say), <strong>meaning</strong> (virtues you value), and <strong>heritage</strong> (classical references from texts like <em>Classic of Poetry</em> and <em>Chu Ci</em>). We also offer <strong>handwritten blessings</strong> by respected seniors — turning every name into a wish passed from one generation to the next.</p>
+          <p>Keep it as a digital certificate, or <a href="gift.html">seal it in a traditional stamp</a>. Either way, it’s a keepsake of your story in Chinese characters.</p>
+          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+            <a class="btn btn-ghost" href="gift.html">Explore Gifts</a>
+            <a class="btn btn-primary" href="#start">Get my Chinese name</a>
+          </div>
+        </div>
+        <figure class="story-card" style="margin:0">
+          <img src="assets/story/calligraphy.jpg" alt="Calligraphy and traditional seal set" loading="lazy">
+          <figcaption style="font-size:12px;color:var(--muted);margin-top:6px">Handwritten blessings · Traditional seals · Stories you can hold</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- STORIES / SOCIAL PROOF -->
+    <section class="section" id="stories" aria-label="Case studies" style="margin:12px 0 16px">
+      <div class="sep"></div>
+      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif;font-size:24px;margin:0 0 10px">Stories from our users</h2>
       <div class="stories">
         <article class="story">
           <blockquote>“I teach Mandarin in London. My students loved receiving a certificate that explained their names with poetry.”</blockquote>
@@ -312,16 +309,18 @@
       </div>
     </section>
 
+    <!-- COUNTER -->
     <section class="section band" aria-label="usage counter">
       <div class="container">
         <div class="counter">Used by <span id="counter" class="odometer">2,048</span> people — and counting</div>
       </div>
     </section>
 
-    <section class="section" id="pricing" style="margin:20px 0 60px">
+    <!-- PRICING / GIFTS -->
+    <section class="section" id="pricing" style="margin:16px 0 60px">
       <div class="sep"></div>
-      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif; font-size:24px; margin:0 0 10px">Own your identity</h2>
-      <p style="margin-top:0; color:#2a2a2a">Start free. Upgrade anytime.</p>
+      <h2 style="font-family:'Playfair Display','Noto Serif TC',serif;font-size:24px;margin:0 0 10px">Own your identity</h2>
+      <p style="margin-top:0;color:#2a2a2a">Start free. Upgrade anytime.</p>
       <div class="pricing">
         <div class="feature">
           <h3>Digital Certificate</h3>
@@ -335,175 +334,155 @@
         </div>
         <div class="feature">
           <h3>Seal Gift Box — Horn</h3>
-          <p>Premium horn seal engraved with your name <em>and</em> a classical source of the name on the seal body (e.g., 《詩經》, 《楚辭》). A piece to cherish.</p>
+          <p>Premium horn seal engraved with your name <em>and</em> a classical source of the name on the seal body (e.g., 《詩經》, 《楚辭》).</p>
           <button class="btn btn-ghost" data-gift="horn">Preview →</button>
         </div>
       </div>
+      <div style="margin-top:14px">
+        <a class="btn btn-primary" href="gift.html">Go to Gifts page</a>
+      </div>
     </section>
-    </main>
+  </main>
 
+  <!-- Sticky CTA (mobile) -->
   <div id="stickyCTA" class="sticky-cta" role="region" aria-label="sticky actions">
     <div class="container cta-wrap">
       <span class="cta-text">Start your Chinese identity journey</span>
-      <a class="btn btn-primary" href="#start" data-track="sticky-discover">Get my Chinese name</a>
+      <div style="display:flex;gap:8px">
+        <a class="btn btn-ghost" href="gift.html" data-track="sticky-gift">Gifts</a>
+        <a class="btn btn-primary" href="#start" data-track="sticky-discover">Get my Chinese name</a>
+      </div>
     </div>
   </div>
 
-  <footer style="border-top:1px solid var(--line); padding:16px 0; background:#fff7">
-    <div class="container" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px">
-      <div style="font-size:13px; color:var(--muted)">© <span id="y"></span> HanName. Crafted in Taiwan, made for the world.</div>
-      <div style="display:flex; gap:10px; font-size:13px">
+  <!-- Footer -->
+  <footer style="border-top:1px solid var(--line);padding:16px 0;background:#fff7">
+    <div class="container" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <div style="font-size:13px;color:var(--muted)">© <span id="y"></span> HanName. Crafted in Taiwan, made for the world.</div>
+      <div style="display:flex;gap:10px;font-size:13px">
         <a href="#how" style="color:inherit">About</a>
-        <a href="#pricing" style="color:inherit">Pricing</a>
+        <a href="gift.html" style="color:inherit">Gifts</a>
         <a href="mailto:hello@hanname.ai" style="color:inherit">Contact</a>
       </div>
     </div>
   </footer>
 
+  <!-- Gift Preview Modal -->
   <div id="giftModal" aria-modal="true" role="dialog">
     <div class="modal-content">
-        <button class="modal-close-btn" aria-label="Close dialog">&times;</button>
-        <img id="modalImg" src="" alt="Gift preview" class="modal-img">
-        <h3 id="modalTitle" class="modal-title"></h3>
-        <p id="modalDesc" class="modal-desc"></p>
-        <div class="modal-pricing">
-            <span id="modalPriceSpecial" class="modal-price-special"></span>
-            <span id="modalPriceOriginal" class="modal-price-original"></span>
-        </div>
-        <a id="modalBuyBtn" href="#" class="btn btn-primary" style="width: 100%;">立即購買</a>
+      <button class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      <img id="modalImg" src="" alt="Gift preview" class="modal-img" loading="lazy">
+      <h3 id="modalTitle" class="modal-title"></h3>
+      <p id="modalDesc" class="modal-desc"></p>
+      <div class="modal-pricing">
+        <span id="modalPriceSpecial" class="modal-price-special"></span>
+        <span id="modalPriceOriginal" class="modal-price-original"></span>
+      </div>
+      <a id="modalBuyBtn" href="gift.html" class="btn btn-primary" style="width:100%">前往禮物頁面</a>
     </div>
   </div>
 
   <script>
-    // Fill year
+    // Year
     document.getElementById('y').textContent = new Date().getFullYear();
 
-    // Intersection + Scroll logic
+    // Section reveal
     const sections = Array.from(document.querySelectorAll('section.section'));
     const revealIO = new IntersectionObserver((entries)=>{
-      entries.forEach(entry=>{
-        if(entry.isIntersecting){ entry.target.classList.add('is-visible'); }
-      });
+      entries.forEach(entry=>{ if(entry.isIntersecting){ entry.target.classList.add('is-visible'); }});
     }, {threshold: 0.15});
     sections.forEach(s=>revealIO.observe(s));
-    
+
     // Counter
-    const COUNTER_KEY = 'hanname_visits_counter_v1';
-    const BASE = 2048;
-    const current = (parseInt(localStorage.getItem(COUNTER_KEY)||'0',10) || BASE) + Math.floor(Math.random()*8)+1;
-    localStorage.setItem(COUNTER_KEY, String(current));
-    const $counter = document.getElementById('counter');
-    if ($counter) setTimeout(() => $counter.textContent = current.toLocaleString(), 220);
+    const COUNTER_KEY='hanname_visits_counter_v1';
+    const BASE=2048;
+    const current=(parseInt(localStorage.getItem(COUNTER_KEY)||'0',10)||BASE)+Math.floor(Math.random()*8)+1;
+    localStorage.setItem(COUNTER_KEY,String(current));
+    const $counter=document.getElementById('counter');
+    if($counter) setTimeout(()=> $counter.textContent=current.toLocaleString(),220);
 
-    // TTS
-    const ttsBtn = document.getElementById('ttsBtn');
-    if (ttsBtn) ttsBtn.addEventListener('click', () => speakCN('雅寧'));
-    function speakCN(text) {
-        if (!('speechSynthesis' in window)) return;
-        const utter = new SpeechSynthesisUtterance(text);
-        const v = speechSynthesis.getVoices().find(v => /zh|cmn/i.test(v.lang));
-        if (v) utter.voice = v;
-        utter.lang = v?.lang || 'zh-TW';
-        speechSynthesis.cancel();
-        speechSynthesis.speak(utter);
+    // TTS sample
+    const ttsBtn=document.getElementById('ttsBtn');
+    if(ttsBtn) ttsBtn.addEventListener('click',()=> speakCN('雅寧'));
+    function speakCN(text){
+      if(!('speechSynthesis' in window)) return;
+      const utter=new SpeechSynthesisUtterance(text);
+      const v=speechSynthesis.getVoices().find(v=>/zh|cmn/i.test(v.lang));
+      if(v) utter.voice=v;
+      utter.lang=v?.lang||'zh-TW';
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
     }
-    
-    // Gift Modal Logic
-    const giftData = {
-        wood: { imgSrc: 'assets/gifts/wood-seal.jpg', title: 'Seal Gift Box — Wood', description: 'Traditional wooden name seal with your Chinese name. Includes an origin card describing the meaning and sound.', priceSpecial: 'NT$1,280', priceOriginal: 'NT$1,500' },
-        horn: { imgSrc: 'assets/gifts/horn-seal.jpg', title: 'Seal Gift Box — Horn', description: 'Premium horn seal engraved with your name and a classical source on the seal body.', priceSpecial: 'NT$2,580', priceOriginal: 'NT$3,200' }
-    };
-    const modal = document.getElementById('giftModal');
-    const openModal = (key) => {
-        const data = giftData[key]; if (!data) return;
-        Object.keys(data).forEach(k => {
-            const el = modal.querySelector(`#modal${k.charAt(0).toUpperCase() + k.slice(1)}`);
-            if (el) {
-                if (el.tagName === 'IMG') el.src = data[k];
-                else el.textContent = data[k];
-            }
-        });
-        modal.querySelector('#modalBuyBtn').href = '#'; // Replace with form link
-        modal.classList.add('visible');
-    };
-    const closeModal = () => modal.classList.remove('visible');
-    document.querySelectorAll('[data-gift]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.gift)));
-    modal.querySelector('.modal-close-btn').addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-    // Tracking helper
-    function track(eventName, params={}){
-      try{ if(typeof gtag === 'function') gtag('event', eventName, params); }catch(e){}
-    }
-    document.querySelectorAll('[data-track]').forEach(el => el.addEventListener('click', () => track(el.dataset.track, {label: el.textContent.trim()})));
-  </script>
- <script>
-    // Form submission logic
+    // Gift modal
+    const giftData={
+      wood:{imgSrc:'assets/gifts/wood-seal.jpg',title:'Seal Gift Box — Wood',description:'Traditional wooden name seal with your Chinese name. Includes an origin card describing the meaning and sound.',priceSpecial:'NT$1,280',priceOriginal:'NT$1,500'},
+      horn:{imgSrc:'assets/gifts/horn-seal.jpg',title:'Seal Gift Box — Horn',description:'Premium horn seal engraved with your name and a classical source on the seal body.',priceSpecial:'NT$2,580',priceOriginal:'NT$3,200'}
+    };
+    const modal=document.getElementById('giftModal');
+    const openModal=(key)=>{
+      const data=giftData[key]; if(!data) return;
+      document.getElementById('modalImg').src=data.imgSrc;
+      document.getElementById('modalTitle').textContent=data.title;
+      document.getElementById('modalDesc').textContent=data.description;
+      document.getElementById('modalPriceSpecial').textContent=data.priceSpecial;
+      document.getElementById('modalPriceOriginal').textContent=data.priceOriginal;
+      modal.classList.add('visible');
+    };
+    const closeModal=()=> modal.classList.remove('visible');
+    document.querySelectorAll('[data-gift]').forEach(btn=>btn.addEventListener('click',()=>openModal(btn.dataset.gift)));
+    modal.querySelector('.modal-close-btn').addEventListener('click',closeModal);
+    modal.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
+
+    // Tracking helper (noop-safe)
+    function track(eventName, params={}){ try{ if(typeof gtag==='function') gtag('event',eventName,params);}catch(e){} }
+    document.querySelectorAll('[data-track]').forEach(el=>el.addEventListener('click',()=>track(el.dataset.track,{label:el.textContent.trim()})));
+
+    // Form submission
     (function(){
-      const $ = (id) => document.getElementById(id);
-      
-      let selectedGender = '';
+      const $=id=>document.getElementById(id);
+      let selectedGender='';
 
       function go(){
-        const name = $('enName')?.value.trim();
-        if(!name){
-          alert('Please enter your name');
-          $('enName')?.focus();
-          return;
-        }
-        const birth = $('birth')?.value.trim();
-  
-        const qs = new URLSearchParams({ name });
-        if(birth) qs.set('birth', birth);
-        if(selectedGender) qs.set('gender', selectedGender);
-  
-        try{ localStorage.setItem('hn:last', JSON.stringify({name, birth})); }catch(_){}
-  
-        const base = location.pathname.replace(/index\.html?$/i, '');
-        location.href = base + 'result.html?' + qs.toString();
+        const name=$('enName')?.value.trim();
+        if(!name){ alert('Please enter your name'); $('enName')?.focus(); return; }
+        const birth=$('birth')?.value.trim();
+
+        const qs=new URLSearchParams({name});
+        if(birth) qs.set('birth',birth);
+        if(selectedGender) qs.set('gender',selectedGender);
+
+        try{ localStorage.setItem('hn:last', JSON.stringify({name,birth})); }catch(_){}
+
+        // Navigate to result
+        const base=location.pathname.replace(/index\.html?$/i,'');
+        location.href=base+'result.html?'+qs.toString();
       }
-  
-      $('goBtn')?.addEventListener('click', (e) => { e.preventDefault(); go(); });
-  
-      $('enName')?.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter'){ e.preventDefault(); $('birth').focus(); }
-      });
-      
-      // Gender selection appearance and logic
-      const birthInput = $('birth');
-      const genderSelection = $('genderSelection');
-      const genderBtns = document.querySelectorAll('.gender-btn');
 
-      birthInput?.addEventListener('change', () => {
-          if (birthInput.value) {
-              genderSelection.classList.add('visible');
-          } else {
-              genderSelection.classList.remove('visible');
-          }
-      });
-      
-      genderBtns.forEach(button => {
-          button.addEventListener('click', () => {
-              const currentActive = document.querySelector('.gender-btn.active');
-              if (currentActive) currentActive.classList.remove('active');
-              button.classList.add('active');
-              selectedGender = button.dataset.gender;
-          });
+      $('goBtn')?.addEventListener('click',(e)=>{ e.preventDefault(); go(); });
+      $('enName')?.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); $('birth').focus(); }});
+
+      const birthInput=$('birth');
+      const genderSelection=$('genderSelection');
+      const genderBtns=document.querySelectorAll('.gender-btn');
+
+      birthInput?.addEventListener('change',()=>{ birthInput.value ? genderSelection.classList.add('visible') : genderSelection.classList.remove('visible'); });
+      genderBtns.forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelector('.gender-btn.active')?.classList.remove('active');
+          btn.classList.add('active'); selectedGender=btn.dataset.gender;
+        });
       });
 
-      // Restore last used values
+      // restore last
       try{
-        const last = JSON.parse(localStorage.getItem('hn:last') || 'null');
+        const last=JSON.parse(localStorage.getItem('hn:last')||'null');
         if(last){
-          if(last.name) $('enName').value = last.name;
-          if(last.birth) {
-              $('birth').value = last.birth;
-              birthInput?.dispatchEvent(new Event('change'));
-          }
+          if(last.name) $('enName').value=last.name;
+          if(last.birth){ $('birth').value=last.birth; birthInput?.dispatchEvent(new Event('change')); }
         }
       }catch(_){}
     })();
   </script>
-  
 </body>
 </html>
